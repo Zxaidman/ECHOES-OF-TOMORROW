@@ -119,11 +119,11 @@ func create_save_state() -> Dictionary:
 	return {"background_residents":_background_residents,"npcs":_npcs.duplicate(true),"relationships":_relationships.duplicate(true),"last_tick_minute":_last_tick_minute,"daily_food_shortfalls":_daily_food_shortfalls}
 
 func restore_save_state(state: Dictionary) -> Dictionary:
-	if typeof(state.get("background_residents",null)) != TYPE_INT or int(state.background_residents) < 0:
+	if not _is_integral_number(state.get("background_residents",null)) or int(state.background_residents) < 0:
 		return {"ok":false,"error":"Invalid background resident count"}
 	if not state.get("npcs",null) is Dictionary or not state.get("relationships",null) is Dictionary:
 		return {"ok":false,"error":"Population save is missing NPC or relationship state"}
-	if typeof(state.get("last_tick_minute",null)) != TYPE_INT or typeof(state.get("daily_food_shortfalls",null)) != TYPE_INT:
+	if not _is_integral_number(state.get("last_tick_minute",null)) or not _is_integral_number(state.get("daily_food_shortfalls",null)):
 		return {"ok":false,"error":"Population save is missing tick metadata"}
 	var npcs: Dictionary = state.npcs.duplicate(true)
 	for npc_id: String in npcs:
@@ -131,10 +131,10 @@ func restore_save_state(state: Dictionary) -> Dictionary:
 		if not npc is Dictionary or str(npc.get("id","")) != npc_id or not npc.get("needs",null) is Dictionary or not npc.get("skills",null) is Dictionary:
 			return {"ok":false,"error":"Population save contains an invalid NPC"}
 		for stat: String in ["health","age"]:
-			if typeof(npc.get(stat,null)) != TYPE_INT or int(npc[stat]) < 0 or (stat == "health" and int(npc[stat]) > STAT_MAX):
+			if not _is_integral_number(npc.get(stat,null)) or int(npc[stat]) < 0 or (stat == "health" and int(npc[stat]) > STAT_MAX):
 				return {"ok":false,"error":"Population save contains an invalid NPC stat"}
 		for need: String in ["hunger","rest","social"]:
-			if typeof(npc.needs.get(need,null)) != TYPE_INT or int(npc.needs[need]) < 0 or int(npc.needs[need]) > STAT_MAX:
+			if not _is_integral_number(npc.needs.get(need,null)) or int(npc.needs[need]) < 0 or int(npc.needs[need]) > STAT_MAX:
 				return {"ok":false,"error":"Population save contains an invalid need"}
 	_background_residents = int(state.background_residents)
 	_npcs = npcs
@@ -154,3 +154,6 @@ func _choose_goal(needs: Dictionary) -> String:
 
 func _key(source: String, target: String) -> String:
 	return source + ">" + target
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))
