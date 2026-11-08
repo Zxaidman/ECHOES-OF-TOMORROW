@@ -9,6 +9,7 @@ const PopulationSimulation = preload("res://game/domain/population/population_si
 const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
 const HistoricalTimeline = preload("res://game/domain/simulation/historical_timeline.gd")
 const FacilitySimulation = preload("res://game/domain/settlement/facility_simulation.gd")
+const NPCDialogueGateway = preload("res://game/domain/population/npc_dialogue_gateway.gd")
 const ContentCatalog = preload("res://game/infrastructure/content/content_catalog.gd")
 const RESOURCE_DELTA_EVENT: String = "resource_delta"
 const POPULATION_HOURLY_EVENT: String = "population_hourly_tick"
@@ -23,6 +24,7 @@ var knowledge: KnowledgeInventionSystem
 var timeline: HistoricalTimeline
 var facilities: FacilitySimulation
 var event_log: Array[Dictionary] = []
+var _dialogue_sequence: int = 0
 
 func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
 	clock = SimulationClock.new(clampi(start_minute, 0, MAX_MINUTE))
@@ -75,6 +77,23 @@ func schedule_resource_delta(event_id: String, scheduled_minute: int, priority: 
 	if amount == 0:
 		return {"ok": false, "error": "Resource delta cannot be zero"}
 	return events.schedule(event_id, scheduled_minute, priority, RESOURCE_DELTA_EVENT, {"resource_id": resource_id, "amount": amount}, repeat_interval)
+
+func request_npc_dialogue(npc_id: String, player_input: String) -> Dictionary:
+	var npc: Dictionary = population.get_npc(npc_id)
+	if npc.is_empty():
+		return {"ok": false, "error": "Unknown NPC: %s" % npc_id}
+	_dialogue_sequence += 1
+	var memories: Array = population.retrieve_memories(npc_id, [], [], clock.current_minute, NPCDialogueGateway.MAX_CONTEXT_MEMORIES)
+	var request_id: String = "talk-%s-%d-%d" % [npc_id, clock.current_minute, _dialogue_sequence]
+	var gateway: NPCDialogueGateway = NPCDialogueGateway.new()
+	var request_result: Dictionary = gateway.build_request(request_id, npc, player_input, "At the settlement.", memories)
+	if not request_result.ok:
+		return request_result
+	var response: Dictionary = gateway.offline_response(request_result.request)
+	var validation: Dictionary = gateway.validate_response(request_result.request, response)
+	if not validation.ok:
+		return validation
+	return {"ok": true, "proposal": validation.proposal}
 
 func resolve_historical_choice(event_id: String, choice_id: String) -> Dictionary:
 	var event_queue_id: String = "history-trigger:" + event_id

@@ -24,4 +24,4 @@
 4. Development Release reruns tests, exports Windows x86_64 and publishes a GitHub prerelease.
 5. Open a PR from develop to main when a milestone is ready.
 
-develop is the integration branch. main remains the stable baseline.
+develop is the integration branch. main remains the stable baseline. Stable 1.0.0 must not be tagged or merged to main until the manual acceptance checklist passes and the owner approves the release.

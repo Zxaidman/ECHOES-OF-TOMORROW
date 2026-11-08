@@ -34,6 +34,8 @@ func _run() -> void:
 	_test_knowledge_inventions()
 	_test_first_spark_campaign()
 	_test_save_round_trip()
+	_test_save_backup_recovery()
+	_test_npc_dialogue_simulation()
 	print("Test summary: %d assertions, %d failures" % [_assertions, _failures])
 	quit(1 if _failures > 0 else 0)
 
@@ -197,6 +199,37 @@ func _test_save_round_trip() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path + ".bak"))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_saves"))
 
+func _test_save_backup_recovery() -> void:
+	var manager: SaveManager = SaveManager.new()
+	var path: String = "user://test_saves/recovery_campaign.json"
+	var first: Dictionary = {"campaign_id":"recovery-test","simulation_minute":10,"state":{"revision":1}}
+	var second: Dictionary = {"campaign_id":"recovery-test","simulation_minute":20,"state":{"revision":2}}
+	_expect(manager.save_snapshot(path, first).ok, "first recovery fixture saves")
+	var second_save: Dictionary = manager.save_snapshot(path, second)
+	_expect(second_save.ok and second_save.backup_created, "second save preserves a verified backup")
+	var corrupt_file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	if corrupt_file != null:
+		corrupt_file.store_string("{broken json")
+		corrupt_file.close()
+	var recovered: Dictionary = manager.load_snapshot(path)
+	_expect(recovered.ok and recovered.get("recovered_from_backup", false), "corrupt active save recovers from backup")
+	if recovered.ok:
+		_expect(int(recovered.data.state.revision) == 1, "backup recovery returns the previous known-good campaign")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_saves"))
+
+func _test_npc_dialogue_simulation() -> void:
+	var simulation: SettlementSimulation = SettlementSimulation.new(480, 44)
+	var memory: Dictionary = {"id":"dialogue-memory","event_id":"harvest_crisis","timestamp_minute":480,"summary":"Elin shared seed with the village after the harvest crisis.","importance":90,"source":"witnessed","confidence":100,"participants":["elin"],"tags":["harvest","agriculture"]}
+	_expect(simulation.population.record_memory("mara", memory).ok, "NPC dialogue fixture records private memory")
+	var result: Dictionary = simulation.request_npc_dialogue("mara", "What do you remember?")
+	_expect(result.ok, "settlement exposes a validated offline NPC conversation")
+	if result.ok:
+		_expect(str(result.proposal.dialogue_text).contains("Elin shared seed"), "NPC dialogue uses its own retrieved memory")
+		_expect(result.proposal.referenced_memory_ids == ["dialogue-memory"], "NPC dialogue cites only supplied memory IDs")
+	_expect(not simulation.request_npc_dialogue("unknown", "Hello.").ok, "unknown NPC conversation is rejected")
+
 func _expect(condition: bool, message: String) -> void:
 	_assertions += 1
 	if not condition:
@@ -301,6 +334,7 @@ func _test_npc_memory_and_dialogue() -> void:
 	var request: Dictionary = request_result.request
 	var fallback: Dictionary = gateway.offline_response(request)
 	_expect(fallback.intent == "none" and not str(fallback.dialogue_text).is_empty(), "offline dialogue fallback is deterministic and non-mutating")
+	_expect(str(fallback.dialogue_text).contains("Mara treated Elin") and fallback.referenced_memory_ids == ["memory-001"], "offline dialogue reflects and cites the NPC memory")
 	var valid_response: Dictionary = fallback.duplicate(true)
 	valid_response.dialogue_text = "I treated her after the harvest accident."
 	valid_response.referenced_memory_ids = ["memory-001"]

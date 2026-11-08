@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.9.0
+**Roadmap version:** 1.0.0-rc.1
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -104,11 +104,26 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 - [x] Invention production gated by required facility
 - [x] Focused tabs and reduced interface copy
 - [x] Facility, migration, construction and production-gate tests
-- [ ] Headless validation and Windows export
-- [ ] Manual playtest deferred to 1.0.0
+- [x] Headless validation and Windows development export
+- [x] Manual playtest deferred to 1.0.0 release candidate
+
+## 1.0.0 release candidate status
+
+- [x] Focused settlement, people, history, knowledge and production navigation
+- [x] Facility construction and facility-gated invention production
+- [x] Memory-aware offline conversations with validated NPC-scoped context
+- [x] Save DTO verification and previous-good backup recovery
+- [x] Facility and invention content-reference validation
+- [x] Automated save-recovery, conversation, migration and simulation regression tests
+- [x] Windows development export workflow
+- [ ] Manual Windows launch and navigation checklist
+- [ ] Full First Spark progression and historical decision playthrough
+- [ ] Save, restart, backup recovery and reload playthrough
+- [ ] Resolve all critical/high-severity issues
+- [ ] Stable 1.0.0 approval
 
 ## Next work queue
 
-1. Complete release hardening, deterministic regression coverage, save compatibility fixtures and UX acceptance checks.
-2. Validate the Windows release candidate manually before 1.0.0.
-3. Keep Android and Web outside the 1.0.0 promise until their separate platform gates pass.
+1. Complete the manual acceptance checklist in PLAYTEST_1.0.0.md.
+2. Fix critical/high-severity issues and rerun CI/export.
+3. Publish stable 1.0.0 only after acceptance is complete.
