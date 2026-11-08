@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0] - Development
+
+### Added
+- Structured, bounded per-NPC memory records with event IDs, timestamps, provenance, confidence, importance, participants and tags.
+- Deterministic topic/participant/recency retrieval, age-based importance decay and bounded retention.
+- Memory persistence, strict restore validation and migration from 0.5.0 population saves.
+- Provider-neutral dialogue request/response DTOs with bounded context, strict field allowlisting and validated intent proposals.
+- Deterministic offline dialogue fallback; untrusted responses cannot mutate simulation state.
+
+### Notes
+- No live cloud provider adapter is shipped. Secure inference requires a controlled backend; client API keys are prohibited.
+- Manual playtesting remains deferred until 1.0.0.
+
+
 ## [0.5.0] - Unreleased
 
 ### Added

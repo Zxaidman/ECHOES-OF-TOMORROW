@@ -1,6 +1,6 @@
 # NPC Intelligence Specification
 
-**Document version:** 0.1.0
+**Document version:** 0.2.0
 
 ## 1. Design objective
 
@@ -172,7 +172,15 @@ Retrieve a small set of memories using deterministic relevance scoring based on 
 
 Provider-specific code stays behind the gateway. A private API key must never be embedded in Windows, Android or Web client builds. If cloud inference is introduced, route requests through a controlled backend with authentication, quotas, rate limits, timeouts and data minimization. Provide an offline fallback for every gameplay-critical interaction.
 
-## 12. Initial implementation scope
+## 12. Implemented 0.6.0 boundary
+
+The first memory implementation stores records per NPC with stable memory/event IDs, integer simulation timestamps, bounded summaries, importance, source provenance (`witnessed` or `hearsay`), confidence, participant IDs and tags. Each important NPC retains at most 50 records. Importance decays by one point per 30 in-game days; records at zero effective importance are omitted from retrieval and pruned on the next memory write. Retrieval is deterministic, NPC-scoped, topic/participant aware and capped at five records.
+
+The dialogue gateway builds a minimal request DTO and strictly validates response fields, request identity, intent allowlist, target allowlist, text length and memory references. Its offline response is deterministic. The gateway deliberately does not make network calls. A live provider must be implemented as a separate adapter behind a controlled backend; never embed a private provider key in the game client.
+
+Older 0.5.0 population snapshots migrate by initializing each NPC with an empty memory list. New snapshots validate memory records and per-NPC limits before restoring state.
+
+## 13. Initial implementation scope
 
 For the first playable milestone:
 - Deterministic authored dialogue is the guaranteed baseline.

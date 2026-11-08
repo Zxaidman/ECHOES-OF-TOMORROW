@@ -9,6 +9,7 @@ const RandomStreams = preload("res://game/domain/simulation/random_streams.gd")
 const SettlementSimulation = preload("res://game/domain/simulation/settlement_simulation.gd")
 const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
 const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
+const NPCDialogueGateway = preload("res://game/domain/population/npc_dialogue_gateway.gd")
 var _failures: int = 0
 var _assertions: int = 0
 
@@ -24,6 +25,7 @@ func _run() -> void:
 	_test_simulation_determinism()
 	_test_simulation_save_restore()
 	_test_population_simulation()
+	_test_npc_memory_and_dialogue()
 	_test_knowledge_inventions()
 	_test_save_round_trip()
 	print("Test summary: %d assertions, %d failures" % [_assertions, _failures])
@@ -168,6 +170,48 @@ func _test_population_simulation() -> void:
 	_expect(restored.restore_save_state(population.create_save_state())["ok"], "population state restores")
 	_expect(restored.create_save_state() == population.create_save_state(), "population snapshot round-trips exactly")
 	_expect(not restored.set_relationship("unknown","edric",{"trust":10})["ok"], "unknown NPC relationship target rejected")
+
+func _test_npc_memory_and_dialogue() -> void:
+	var population: PopulationSimulation = PopulationSimulation.new()
+	var memory: Dictionary = {"id":"memory-001","event_id":"event-001","timestamp_minute":1000,"summary":"Mara treated Elin after a harvest accident.","importance":80,"source":"witnessed","confidence":100,"participants":["mara","elin"],"tags":["medicine","harvest"]}
+	_expect(population.record_memory("mara",memory)["ok"], "NPC accepts a valid structured memory")
+	_expect(not population.record_memory("unknown",memory)["ok"], "unknown NPC cannot receive memories")
+	_expect(not population.record_memory("mara",{"id":"bad"})["ok"], "incomplete memory is rejected")
+	_expect(not population.record_memory("mara",memory)["ok"], "duplicate memory ID is rejected")
+	var retrieved: Array = population.retrieve_memories("mara",["medicine"],["elin"],1100,5)
+	_expect(retrieved.size() == 1 and retrieved[0].id == "memory-001", "memory retrieval matches topic and participant")
+	_expect(population.retrieve_memories("edric",["medicine"],["elin"],1100,5).is_empty(), "NPC cannot retrieve another NPC's private memory")
+	_expect(population.retrieve_memories("mara",[],[],1000 + 80 * 43200,5).is_empty(), "memory importance decays deterministically to expiry")
+	var memory_snapshot: Dictionary = population.create_save_state()
+	var restored: PopulationSimulation = PopulationSimulation.new()
+	_expect(restored.restore_save_state(memory_snapshot)["ok"], "NPC memories restore from campaign state")
+	_expect(restored.create_save_state() == memory_snapshot, "NPC memory state round-trips exactly")
+	var legacy_snapshot: Dictionary = memory_snapshot.duplicate(true)
+	legacy_snapshot.erase("memories")
+	var legacy_restored: PopulationSimulation = PopulationSimulation.new()
+	_expect(legacy_restored.restore_save_state(legacy_snapshot)["ok"], "0.5.0 population save migrates with empty NPC memories")
+	var gateway: NPCDialogueGateway = NPCDialogueGateway.new()
+	var request_result: Dictionary = gateway.build_request("talk-001",population.get_npc("mara"),"What happened to Elin?","At the village clinic.",retrieved)
+	_expect(request_result.ok, "dialogue request is built from bounded NPC context")
+	if not request_result.ok:
+		return
+	var request: Dictionary = request_result.request
+	var fallback: Dictionary = gateway.offline_response(request)
+	_expect(fallback.intent == "none" and not str(fallback.dialogue_text).is_empty(), "offline dialogue fallback is deterministic and non-mutating")
+	var valid_response: Dictionary = fallback.duplicate(true)
+	valid_response.dialogue_text = "I treated her after the harvest accident."
+	valid_response.referenced_memory_ids = ["memory-001"]
+	_expect(gateway.validate_response(request,valid_response).ok, "valid structured dialogue proposal passes validation")
+	var invalid_response: Dictionary = valid_response.duplicate(true)
+	invalid_response["resource_delta"] = 999
+	_expect(not gateway.validate_response(request,invalid_response).ok, "AI response with an unapproved state mutation is rejected")
+	invalid_response = valid_response.duplicate(true)
+	invalid_response.referenced_memory_ids = ["memory-not-provided"]
+	_expect(not gateway.validate_response(request,invalid_response).ok, "AI cannot cite memories outside supplied context")
+	invalid_response = valid_response.duplicate(true)
+	invalid_response.intent = "delete_campaign"
+	_expect(not gateway.validate_response(request,invalid_response).ok, "AI intent outside the allowlist is rejected")
+	_expect(population.create_save_state() == memory_snapshot, "dialogue validation cannot mutate authoritative NPC state")
 
 func _test_knowledge_inventions() -> void:
 	var system: KnowledgeInventionSystem = KnowledgeInventionSystem.new()
