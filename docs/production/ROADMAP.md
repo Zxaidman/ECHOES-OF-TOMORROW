@@ -1,8 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.2.0
-
-Architecture decisions for engine/language, content data, persistence, simulation scheduling and NPC AI boundaries are recorded in ADR-0003 through ADR-0008.
+**Roadmap version:** 0.3.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -20,29 +18,22 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 | 0.9.0 | UX, balance and reliability | Acceptance tests, playtest fixes and performance validation |
 | 1.0.0 | First playable release | Release criteria, documentation and reproducible build |
 
-## 0.2.0 implementation status
+## 0.3.0 implementation status
 
-- [x] Godot project configuration and main scene
-- [x] Initial responsive settlement dashboard shell
-- [x] JSON starter resource and NPC content
-- [x] Integer-minute simulation clock
-- [x] JSON content loading boundary and stable-ID checks
-- [x] Versioned JSON save snapshot foundation
-- [x] Dependency-free headless test runner
-- [x] CI workflow definition (headless validation only)
-- [x] Development release workflow definition (GitHub prerelease assets; no Actions artifacts)
-- [ ] Godot 4.7.2 runtime validation in CI
-- [ ] Windows export template and release workflow verification
-- [ ] UX review at desktop and narrow viewport sizes
+- [x] Deterministic event queue with stable ordering
+- [x] Atomic typed integer resource ledger
+- [x] Independent seeded RNG streams
+- [x] Settlement simulation with recurring resource events
+- [x] Save-state capture and restore for resources, queue and RNG state
+- [x] Dashboard controls for advancing time
+- [x] Campaign save action
+- [ ] Godot 4.7.2 headless validation
+- [ ] Windows development export verification
+- [ ] Manual Windows UX and save/reload playtest
 
 ## Next work queue
 
-1. Verify the 0.2.0 foundation on Godot 4.7.2 and fix engine/parser issues.
-2. Add deterministic scheduled-event queue and seeded random streams.
-3. Add typed settlement state and resource transactions with invariant tests.
-4. Connect dashboard to real application state and player commands.
-5. Add Android feasibility smoke test after the Windows core loop is stable.
-
-## Scope control
-
-A new feature must identify which vertical-slice objective it supports. Features that do not support the slice should be deferred unless they resolve a foundational architectural risk.
+1. Complete population needs, skills, schedules and deterministic NPC goals.
+2. Add building definitions and construction completion events.
+3. Connect invention prerequisites to resource and production constraints.
+4. Add save/load campaign selection and recovery UI.
