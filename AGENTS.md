@@ -2,8 +2,8 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 0.4.0
-- Current phase: population and NPC foundation
+- Current project version: 0.5.0
+- Current phase: knowledge and invention
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
@@ -29,7 +29,7 @@
 10. No dependency/plugin without a documented reason and fallback.
 
 ## Workflow
-Before changing code, inspect relevant docs and contracts. After changes, run headless import/parse and tests, add tests for behavior changes, update docs/changelog, and report exactly what was verified.
+Before changing code, inspect relevant docs and contracts. After changes, run headless import/parse and tests, add tests for behavior changes, update docs/changelog, and report exactly what was verified. Manual desktop playtesting is a 1.0.0 release gate; do not block intermediate milestones on it.
 
 ## Compatibility and versioning
 - Follow MAJOR.MINOR.PATCH.
@@ -54,4 +54,4 @@ Before changing code, inspect relevant docs and contracts. After changes, run he
 - Never claim a build passed unless the workflow run succeeded.
 
 ## Current implementation boundary
-Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, daily food upkeep, save restoration and time controls. Not implemented: construction, inventions, optional LLM dialogue, Android/Web exports.
+Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, daily food upkeep, data-driven knowledge, nine invention definitions, prototype validation, production commissioning and save restoration. Not implemented: construction systems, optional LLM dialogue, Android/Web exports. Manual desktop playtesting is deliberately deferred until the 1.0.0 release candidate.

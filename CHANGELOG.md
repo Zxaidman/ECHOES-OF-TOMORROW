@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0] - Unreleased
+
+### Added
+- Data-driven knowledge catalog with prerequisite and skill-gated study.
+- Nine inventions across agriculture, metallurgy and mechanical engineering.
+- Prototype material costs, skill requirements, validation tests and production commissioning.
+- Atomic production recipes connected to the settlement resource ledger.
+- Knowledge and invention progress included in campaign snapshots.
+- Scrollable dashboard sections for knowledge study and invention progression.
+- Validation for duplicate IDs, unknown dependencies, invalid quantities and dependency cycles.
+
+### Notes
+- Three foundational knowledge entries are known at campaign start; advanced methods must be studied.
+- Manual desktop playtesting is a release gate for 1.0.0, not an interim milestone gate.
+
+
 ## [0.4.0] - Unreleased
 
 ### Added

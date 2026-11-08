@@ -31,6 +31,13 @@ func get_population_count() -> int:
 func get_npc_count() -> int:
 	return _npcs.size()
 
+func get_best_skill(skill_id: String) -> int:
+	var best: int = 0
+	for npc_id: String in _npcs:
+		var skills: Dictionary = _npcs[npc_id].get("skills", {})
+		best = maxi(best, int(skills.get(skill_id, 0)))
+	return best
+
 func get_npc(npc_id: String) -> Dictionary:
 	return _npcs.get(npc_id, {}).duplicate(true)
 

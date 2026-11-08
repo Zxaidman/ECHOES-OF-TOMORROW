@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "knowledge": [
+    {
+      "id": "agronomy_basics",
+      "name": "Agronomy fundamentals",
+      "description": "The principles behind soil fertility, crop selection and sustainable cultivation.",
+      "known_at_start": true,
+      "prerequisites": [],
+      "study_cost": {},
+      "skill_requirements": {}
+    },
+    {
+      "id": "metallurgy_basics",
+      "name": "Metallurgy fundamentals",
+      "description": "Ore reduction, furnace heat, slag and the properties of workable iron.",
+      "known_at_start": true,
+      "prerequisites": [],
+      "study_cost": {},
+      "skill_requirements": {}
+    },
+    {
+      "id": "mechanics_basics",
+      "name": "Mechanical principles",
+      "description": "Force, leverage, rotational motion and the transfer of mechanical work.",
+      "known_at_start": true,
+      "prerequisites": [],
+      "study_cost": {},
+      "skill_requirements": {}
+    },
+    {
+      "id": "crop_selection",
+      "name": "Selective seed cultivation",
+      "description": "Selecting and preserving seed from plants with useful traits.",
+      "known_at_start": false,
+      "prerequisites": [
+        "agronomy_basics"
+      ],
+      "study_cost": {
+        "food": 2
+      },
+      "skill_requirements": {
+        "farming": 20
+      }
+    },
+    {
+      "id": "soil_rotation",
+      "name": "Soil rotation methods",
+      "description": "Rotating crops to preserve soil fertility and reduce recurring losses.",
+      "known_at_start": false,
+      "prerequisites": [
+        "agronomy_basics"
+      ],
+      "study_cost": {
+        "food": 2
+      },
+      "skill_requirements": {
+        "farming": 30
+      }
+    },
+    {
+      "id": "water_management",
+      "name": "Practical water management",
+      "description": "Planning channels, gradients and controlled water distribution.",
+      "known_at_start": false,
+      "prerequisites": [
+        "agronomy_basics",
+        "mechanics_basics"
+      ],
+      "study_cost": {
+        "food": 3
+      },
+      "skill_requirements": {
+        "farming": 25
+      }
+    },
+    {
+      "id": "bloomery_operation",
+      "name": "Bloomery operation",
+      "description": "Operating a low-shaft furnace and separating workable bloom from slag.",
+      "known_at_start": false,
+      "prerequisites": [
+        "metallurgy_basics"
+      ],
+      "study_cost": {
+        "food": 2
+      },
+      "skill_requirements": {
+        "crafting": 25
+      }
+    },
+    {
+      "id": "iron_working",
+      "name": "Iron working",
+      "description": "Forging and heat-working iron into reliable tools.",
+      "known_at_start": false,
+      "prerequisites": [
+        "metallurgy_basics",
+        "bloomery_operation"
+      ],
+      "study_cost": {
+        "food": 3
+      },
+      "skill_requirements": {
+        "crafting": 40
+      }
+    },
+    {
+      "id": "carbon_control",
+      "name": "Carbon and heat control",
+      "description": "Controlling carbon exposure and heat treatment for harder iron alloys.",
+      "known_at_start": false,
+      "prerequisites": [
+        "metallurgy_basics",
+        "iron_working"
+      ],
+      "study_cost": {
+        "food": 4
+      },
+      "skill_requirements": {
+        "crafting": 55
+      }
+    },
+    {
+      "id": "hydraulics",
+      "name": "Hydraulic power",
+      "description": "Using water flow, head and wheel geometry to deliver mechanical power.",
+      "known_at_start": false,
+      "prerequisites": [
+        "mechanics_basics"
+      ],
+      "study_cost": {
+        "food": 2
+      },
+      "skill_requirements": {
+        "crafting": 25
+      }
+    },
+    {
+      "id": "gear_trains",
+      "name": "Gear trains and transmission",
+      "description": "Transmitting rotation through gears with useful speed and torque ratios.",
+      "known_at_start": false,
+      "prerequisites": [
+        "mechanics_basics",
+        "hydraulics"
+      ],
+      "study_cost": {
+        "food": 3
+      },
+      "skill_requirements": {
+        "crafting": 45
+      }
+    },
+    {
+      "id": "pump_design",
+      "name": "Mechanical pumping",
+      "description": "Using mechanical motion to lift and move water with repeatable output.",
+      "known_at_start": false,
+      "prerequisites": [
+        "mechanics_basics",
+        "gear_trains",
+        "water_management"
+      ],
+      "study_cost": {
+        "food": 4
+      },
+      "skill_requirements": {
+        "crafting": 55,
+        "farming": 25
+      }
+    }
+  ]
+}
