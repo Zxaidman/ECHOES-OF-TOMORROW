@@ -121,7 +121,7 @@ func resolve(event_id: String, choice_id: String, minute: int, resources: Resour
 			return {"ok":false,"error":"Historical choice repeats a relationship update"}
 		updated_pairs[pair_id] = true
 		for dimension: String in ["trust","cooperation","conflict"]:
-			if update.has(dimension) and (typeof(update[dimension]) != TYPE_INT or int(update[dimension]) < -100 or int(update[dimension]) > 100):
+			if update.has(dimension) and (not _is_integral_number(update[dimension]) or int(update[dimension]) < -100 or int(update[dimension]) > 100):
 				return {"ok":false,"error":"Historical relationship change is outside its bounds"}
 	var memory_specs: Array = selected.get("memories",[])
 	for memory_spec: Variant in memory_specs:
