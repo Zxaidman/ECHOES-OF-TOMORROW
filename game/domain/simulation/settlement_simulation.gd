@@ -7,9 +7,11 @@ const ResourceLedger = preload("res://game/domain/settlement/resource_ledger.gd"
 const RandomStreams = preload("res://game/domain/simulation/random_streams.gd")
 const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
 const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
+const HistoricalTimeline = preload("res://game/domain/simulation/historical_timeline.gd")
 const ContentCatalog = preload("res://game/infrastructure/content/content_catalog.gd")
 const RESOURCE_DELTA_EVENT: String = "resource_delta"
 const POPULATION_HOURLY_EVENT: String = "population_hourly_tick"
+const HISTORICAL_TRIGGER_EVENT: String = "historical_trigger"
 const MAX_MINUTE: int = 2147483647
 var clock: SimulationClock
 var events: ScheduledEventQueue
@@ -17,6 +19,7 @@ var resources: ResourceLedger
 var random_streams: RandomStreams
 var population: PopulationSimulation
 var knowledge: KnowledgeInventionSystem
+var timeline: HistoricalTimeline
 var event_log: Array[Dictionary] = []
 
 func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
@@ -39,6 +42,15 @@ func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
 	var knowledge_result: Dictionary = knowledge.initialize()
 	if not knowledge_result.ok:
 		push_error("Knowledge content initialization failed: " + str(knowledge_result.error))
+	timeline = HistoricalTimeline.new()
+	var timeline_result: Dictionary = timeline.initialize(start_minute)
+	if not timeline_result.ok:
+		push_error("Historical timeline initialization failed: " + str(timeline_result.error))
+	else:
+		for historical_event: Dictionary in timeline_result.scheduled_events:
+			var schedule_result: Dictionary = events.schedule("history-trigger:" + str(historical_event.event_id),int(historical_event.scheduled_minute),10,HISTORICAL_TRIGGER_EVENT,{"event_id":str(historical_event.event_id)})
+			if not schedule_result.ok:
+				push_error("Historical event scheduling failed: " + str(schedule_result.error))
 	var next_hour: int = (int(start_minute / 60) + 1) * 60
 	var next_meal: int = int(start_minute / 1440) * 1440 + 540
 	if next_meal <= start_minute:
@@ -54,6 +66,22 @@ func schedule_resource_delta(event_id: String, scheduled_minute: int, priority: 
 	if amount == 0:
 		return {"ok": false, "error": "Resource delta cannot be zero"}
 	return events.schedule(event_id, scheduled_minute, priority, RESOURCE_DELTA_EVENT, {"resource_id": resource_id, "amount": amount}, repeat_interval)
+
+func resolve_historical_choice(event_id: String, choice_id: String) -> Dictionary:
+	var event_queue_id: String = "history-trigger:" + event_id
+	for pending: Dictionary in events.to_array():
+		if str(pending.id) == event_queue_id:
+			return {"ok":false,"error":"Historical event has not triggered yet"}
+	var result: Dictionary = timeline.resolve(event_id,choice_id,clock.current_minute,resources,population)
+	if not result.ok:
+		return result
+	var follow_up: Dictionary = result.get("follow_up",{})
+	if not follow_up.is_empty():
+		var follow_event_id: String = str(follow_up.event_id)
+		var schedule_result: Dictionary = events.schedule("history-trigger:" + follow_event_id,int(follow_up.scheduled_minute),10,HISTORICAL_TRIGGER_EVENT,{"event_id":follow_event_id})
+		if not schedule_result.ok:
+			return {"ok":false,"error":"Choice resolved but follow-up could not be scheduled: " + str(schedule_result.error)}
+	return result
 
 func advance_time(minutes: int) -> Dictionary:
 	if minutes < 0 or clock.current_minute > MAX_MINUTE - minutes:
@@ -80,7 +108,7 @@ func advance_time(minutes: int) -> Dictionary:
 	return {"ok": true, "processed_events": processed_count, "current_minute": clock.current_minute}
 
 func create_save_state() -> Dictionary:
-	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state(), "knowledge": knowledge.create_save_state()}
+	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state(), "knowledge": knowledge.create_save_state(), "timeline": timeline.create_save_state()}
 
 func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary:
 	if simulation_minute < 0 or simulation_minute > MAX_MINUTE or not state.has("resources") or not state["resources"] is Dictionary:
@@ -95,6 +123,8 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		return {"ok": false, "error": "Save is missing population state"}
 	if state.has("knowledge") and not state["knowledge"] is Dictionary:
 		return {"ok": false, "error": "Save contains invalid knowledge state"}
+	if state.has("timeline") and not state["timeline"] is Dictionary:
+		return {"ok": false, "error": "Save contains invalid timeline state"}
 	var new_resources: ResourceLedger = ResourceLedger.new()
 	var resource_result: Dictionary = new_resources.restore(state["resources"])
 	if not resource_result["ok"]:
@@ -132,6 +162,30 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		if not knowledge_restore.ok:
 			return knowledge_restore
 	# 0.4.0 saves predate knowledge progression; initialize the new campaign defaults.
+	var new_timeline: HistoricalTimeline = HistoricalTimeline.new()
+	var timeline_init: Dictionary = new_timeline.initialize(simulation_minute)
+	if not timeline_init.ok:
+		return timeline_init
+	if state.has("timeline"):
+		var timeline_restore: Dictionary = new_timeline.restore_save_state(state["timeline"])
+		if not timeline_restore.ok:
+			return timeline_restore
+	var queued_ids: Dictionary = {}
+	for queued_event: Dictionary in new_events.to_array():
+		queued_ids[str(queued_event.id)] = queued_event
+	for scheduled_history: Dictionary in new_timeline.get_scheduled_events():
+		var history_queue_id: String = "history-trigger:" + str(scheduled_history.event_id)
+		if int(scheduled_history.scheduled_minute) < simulation_minute:
+			return {"ok":false,"error":"Timeline contains an event scheduled in the past"}
+		if queued_ids.has(history_queue_id):
+			var existing: Dictionary = queued_ids[history_queue_id]
+			if str(existing.type) != HISTORICAL_TRIGGER_EVENT or str(existing.payload.get("event_id","")) != str(scheduled_history.event_id) or int(existing.scheduled_minute) != int(scheduled_history.scheduled_minute):
+				return {"ok":false,"error":"Timeline queue does not match its campaign record"}
+		else:
+			var history_schedule_result: Dictionary = new_events.schedule(history_queue_id,int(scheduled_history.scheduled_minute),10,HISTORICAL_TRIGGER_EVENT,{"event_id":str(scheduled_history.event_id)})
+			if not history_schedule_result.ok:
+				return history_schedule_result
+	# 0.6.0 saves predate the timeline; initialize the new historical schedule.
 	var new_random_streams: RandomStreams = RandomStreams.new()
 	var rng_result: Dictionary = new_random_streams.restore(state["random_stream_states"])
 	if not rng_result["ok"]:
@@ -141,11 +195,18 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 	random_streams = new_random_streams
 	population = new_population
 	knowledge = new_knowledge
+	timeline = new_timeline
 	clock = SimulationClock.new(simulation_minute)
 	event_log.clear()
 	return {"ok": true}
 
 func _process_event(event: Dictionary) -> Dictionary:
+	if str(event["type"]) == HISTORICAL_TRIGGER_EVENT:
+		var event_id: String = str(event.get("payload",{}).get("event_id",""))
+		var trigger_result: Dictionary = timeline.trigger(event_id,clock.current_minute)
+		if not trigger_result.ok:
+			return trigger_result
+		return {"ok":true,"kind":"historical_event","event_id":event_id,"title":str(trigger_result.event.title)}
 	if str(event["type"]) == POPULATION_HOURLY_EVENT:
 		return population.tick_hour(int(event["scheduled_minute"]), resources)
 	if str(event["type"]) != RESOURCE_DELTA_EVENT:

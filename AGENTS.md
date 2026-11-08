@@ -2,8 +2,8 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 0.6.0
-- Current phase: NPC memory and optional AI
+- Current project version: 0.7.0
+- Current phase: events and timeline
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
@@ -54,4 +54,4 @@ Before changing code, inspect relevant docs and contracts. After changes, run he
 - Never claim a build passed unless the workflow run succeeded.
 
 ## Current implementation boundary
-Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, bounded persistent NPC memories, deterministic memory retrieval and decay, validated dialogue DTOs and offline fallback, data-driven knowledge, nine invention definitions, prototype validation, production commissioning and save restoration. Not implemented: a live provider adapter or secure inference backend, construction systems, Android/Web exports. Manual desktop playtesting is deliberately deferred until the 1.0.0 release candidate.
+Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, bounded persistent NPC memories, deterministic memory retrieval and decay, validated dialogue DTOs and offline fallback, data-driven knowledge, nine invention definitions, prototype validation, production commissioning, authored historical event choices, causal follow-ups, NPC/resource/relationship consequences and original/altered timeline persistence. Not implemented: a live provider adapter or secure inference backend, construction systems, Android/Web exports. Manual desktop playtesting is deliberately deferred until the 1.0.0 release candidate.

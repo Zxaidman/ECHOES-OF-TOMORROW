@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.6.0
+**Roadmap version:** 0.7.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -23,6 +23,18 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 - Intermediate milestones are validated with headless import, automated tests, CI and reproducible development exports.
 - Manual desktop playtesting, UX walkthrough and save/reload playtesting are intentionally deferred until the 1.0.0 release candidate.
 - 1.0.0 cannot be declared ready until the complete manual playtest checklist is passed and critical issues are resolved.
+
+## 0.7.0 implementation status
+
+- [x] Authored, versioned historical event catalog with stable IDs and validated choice definitions
+- [x] Deterministic event triggers integrated with the integer-minute simulation queue
+- [x] Player choices with resource requirements and atomic resource deltas
+- [x] Causal follow-up events scheduled from resolved choices
+- [x] NPC relationship updates and event-linked persistent NPC memories
+- [x] Original baseline versus preserved/altered outcome records
+- [x] Timeline state persistence, strict restore validation and 0.6.0 save migration
+- [x] Timeline and pending-decision presentation in the settlement dashboard
+- [ ] Manual playtest deferred to 1.0.0 release gate
 
 ## 0.6.0 implementation status
 
@@ -74,7 +86,7 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 
 ## Next work queue
 
-1. Add facilities, construction and resource gathering to support repeatable production.
-2. Add skill development and time-based knowledge study.
-3. Build structured NPC memory and bounded optional AI dialogue.
-4. Add causal world events and original/altered timeline presentation.
+1. Build the end-to-end First Spark vertical slice with a clear player objective and win/continue state.
+2. Add facilities, construction and resource gathering to support repeatable production.
+3. Add skill development and time-based knowledge study.
+4. Expand historical event content, actor/location links and consequences across multiple settlements.

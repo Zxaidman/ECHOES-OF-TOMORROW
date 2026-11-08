@@ -1,6 +1,6 @@
 # World and Timeline System
 
-**Document version:** 0.1.0
+**Document version:** 0.2.0
 
 ## 1. Two timeline views
 
@@ -47,7 +47,17 @@ Distinguish:
 
 One region, one player settlement and one neighboring settlement. Use a small number of explicit locations and events. The purpose is to prove causality and legibility, not simulate an entire planet.
 
-## 6. Player-facing timeline UI
+## 6. Implemented 0.7.0 vertical-slice boundary
+
+The first implementation uses an authored JSON event catalog. Each event has a stable ID, original scheduled minute, baseline choice, bounded choice list and deterministic consequences. Root events are scheduled on the integer-minute simulation queue. A resolved choice may schedule a causal follow-up event.
+
+Choices may declare resource requirements, integer resource deltas, directional NPC relationship updates and event-linked NPC memories. The simulation validates the choice and applies its effects through domain systems. The timeline stores the original minute, actual trigger/resolution minute, selected choice and whether the baseline was altered. The current sample includes a harvest crisis and a follow-up village compact.
+
+This is intentionally a small authored scenario system, not a general-purpose branching narrative engine or a complete historical database. Locations, actor graphs, confidence in historical sources, multi-settlement causality and automated event inference remain future work.
+
+Timeline state is included in campaign snapshots. 0.6.0 saves initialize the new authored timeline from the save's current simulation minute. Resolved outcomes and activated follow-ups are validated against the authored catalog during restore.
+
+## 7. Player-facing timeline UI
 
 The timeline should show:
 - What was expected.
