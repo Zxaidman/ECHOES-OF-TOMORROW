@@ -61,7 +61,7 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		return {"ok": false, "error": "Invalid simulation save state"}
 	if not state.has("scheduled_events") or not state["scheduled_events"] is Array:
 		return {"ok": false, "error": "Save is missing scheduled events"}
-	if not state.has("next_event_sequence_id") or not state["next_event_sequence_id"] is int:
+	if not state.has("next_event_sequence_id") or not _is_integral_number(state["next_event_sequence_id"]):
 		return {"ok": false, "error": "Save is missing event sequence state"}
 	if not state.has("random_stream_states") or not state["random_stream_states"] is Dictionary:
 		return {"ok": false, "error": "Save is missing random stream states"}
@@ -77,7 +77,7 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		if int(event["scheduled_minute"]) < simulation_minute:
 			return {"ok": false, "error": "Save contains an event scheduled in the past"}
 		var payload: Dictionary = event["payload"]
-		if str(event["type"]) == RESOURCE_DELTA_EVENT and (not payload.has("resource_id") or not payload["resource_id"] is String or not new_resources.has_resource(str(payload["resource_id"])) or not payload.has("amount") or not payload["amount"] is int):
+		if str(event["type"]) == RESOURCE_DELTA_EVENT and (not payload.has("resource_id") or not payload["resource_id"] is String or not new_resources.has_resource(str(payload["resource_id"])) or not payload.has("amount") or not _is_integral_number(payload["amount"])):
 			return {"ok": false, "error": "Save contains an invalid resource event"}
 	var new_random_streams: RandomStreams = RandomStreams.new()
 	var rng_result: Dictionary = new_random_streams.restore(state["random_stream_states"])

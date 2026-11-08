@@ -123,8 +123,6 @@ func _test_save_round_trip() -> void:
 	var loaded: Dictionary = manager.load_snapshot(save_path)
 	_expect(loaded["ok"], "save snapshot loads")
 	if loaded["ok"]:
-		print("Loaded save state keys: ", loaded["data"]["state"].keys())
-		print("Loaded save state: ", loaded["data"]["state"])
 		_expect(loaded["data"]["campaign_id"] == "test-campaign", "save preserves campaign ID")
 		_expect(loaded["data"]["simulation_minute"] == simulation.clock.current_minute, "save preserves simulation time")
 		var restored: SettlementSimulation = SettlementSimulation.new()
