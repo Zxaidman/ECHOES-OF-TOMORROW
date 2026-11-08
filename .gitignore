@@ -1,34 +1,19 @@
-# Godot generated files
+# Godot generated data
 .godot/
 .import/
-export.cfg
-export_presets.cfg
+.export/
 
-# Build outputs
+# Export output and local builds
 build/
 dist/
-exports/
 
-# IDE/editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-Desktop.ini
-
-# Logs and temporary files
-*.log
+# Local editor/user state
+*.translation
 *.tmp
 *.bak
 
-# Secrets and local configuration
-.env
-.env.*
-!.env.example
-secrets/
-*.key
-*.pem
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
