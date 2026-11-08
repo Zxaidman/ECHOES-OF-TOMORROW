@@ -55,8 +55,12 @@ func restore(events: Array, next_sequence_id: int) -> Dictionary:
 		for required_key: String in ["scheduled_minute", "priority", "sequence_id", "type", "payload", "repeat_interval"]:
 			if not event.has(required_key):
 				return {"ok": false, "error": "Scheduled event is missing %s" % required_key}
-		if not event["scheduled_minute"] is int or not event["priority"] is int or not event["sequence_id"] is int or not event["repeat_interval"] is int:
+		if not _is_integral_number(event["scheduled_minute"]) or not _is_integral_number(event["priority"]) or not _is_integral_number(event["sequence_id"]) or not _is_integral_number(event["repeat_interval"]):
 			return {"ok": false, "error": "Scheduled event has invalid numeric fields"}
+		event["scheduled_minute"] = int(event["scheduled_minute"])
+		event["priority"] = int(event["priority"])
+		event["sequence_id"] = int(event["sequence_id"])
+		event["repeat_interval"] = int(event["repeat_interval"])
 		if int(event["scheduled_minute"]) < 0 or int(event["sequence_id"]) < 1 or int(event["repeat_interval"]) < 0:
 			return {"ok": false, "error": "Scheduled event contains out-of-range values"}
 		if not event["type"] is String or str(event["type"]).is_empty() or not event["payload"] is Dictionary:
@@ -81,3 +85,6 @@ func _event_before(left: Dictionary, right: Dictionary) -> bool:
 	if int(left["priority"]) != int(right["priority"]):
 		return int(left["priority"]) < int(right["priority"])
 	return int(left["sequence_id"]) < int(right["sequence_id"])
+
+func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))

@@ -10,9 +10,9 @@ func initialize(initial_amounts: Dictionary) -> Dictionary:
 		if not resource_id is String or str(resource_id).is_empty():
 			return {"ok": false, "error": "Resource IDs must be non-empty strings"}
 		var amount: Variant = initial_amounts[resource_id]
-		if not amount is int or int(amount) < 0 or int(amount) > MAX_AMOUNT:
+		if not _is_integral_number(amount) or int(amount) < 0 or int(amount) > MAX_AMOUNT:
 			return {"ok": false, "error": "Invalid starting amount for %s" % str(resource_id)}
-		validated[resource_id] = amount
+		validated[resource_id] = int(amount)
 	_amounts = validated
 	return {"ok": true}
 
@@ -46,3 +46,6 @@ func to_dictionary() -> Dictionary:
 
 func restore(amounts: Dictionary) -> Dictionary:
 	return initialize(amounts)
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))

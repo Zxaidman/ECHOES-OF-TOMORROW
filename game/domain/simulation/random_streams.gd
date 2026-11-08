@@ -30,9 +30,12 @@ func to_dictionary() -> Dictionary:
 
 func restore(states: Dictionary) -> Dictionary:
 	for stream_name: String in ["world", "economy", "npc"]:
-		if not states.has(stream_name) or not states[stream_name] is int:
+		if not states.has(stream_name) or not _is_integral_number(states[stream_name]):
 			return {"ok": false, "error": "Missing or invalid RNG state: %s" % stream_name}
 	_world.state = int(states["world"])
 	_economy.state = int(states["economy"])
 	_npc.state = int(states["npc"])
 	return {"ok": true}
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))

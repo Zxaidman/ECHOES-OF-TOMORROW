@@ -96,6 +96,7 @@ func _test_simulation_determinism() -> void:
 	_expect(one_step.event_log.size() == split_steps.event_log.size(), "split and single advances process same event count")
 	_expect(one_step.resources.get_amount("food") == 124, "consumption and production resolve correctly")
 	_expect(not one_step.advance_time(-1)["ok"], "simulation rejects negative advance")
+	_expect(not one_step.schedule_resource_delta("past-event", 100, 0, "food", -1)["ok"], "simulation rejects events scheduled in the past")
 
 func _test_simulation_save_restore() -> void:
 	var original: SettlementSimulation = SettlementSimulation.new(480, 999)
@@ -113,7 +114,7 @@ func _test_simulation_save_restore() -> void:
 
 func _test_save_round_trip() -> void:
 	var manager: SaveManager = SaveManager.new()
-	var save_path: String = "user://test_campaign.json"
+	var save_path: String = "user://test_saves/test_campaign.json"
 	var simulation: SettlementSimulation = SettlementSimulation.new()
 	simulation.schedule_resource_delta("daily-food", 540, 10, "food", -10, 1440)
 	var snapshot: Dictionary = {"campaign_id": "test-campaign", "simulation_minute": simulation.clock.current_minute, "state": simulation.create_save_state()}
@@ -127,8 +128,12 @@ func _test_save_round_trip() -> void:
 		var restored: SettlementSimulation = SettlementSimulation.new()
 		_expect(restored.restore_save_state(loaded["data"]["simulation_minute"], loaded["data"]["state"])["ok"], "campaign snapshot restores simulation")
 		_expect(restored.events.to_array() == simulation.events.to_array(), "snapshot preserves pending events")
+		var continued: Dictionary = restored.advance_time(60)
+		_expect(continued["ok"], "JSON-restored simulation continues")
+		_expect(restored.resources.get_amount("food") == 110, "JSON-restored event applies resource delta")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_saves"))
 
 func _expect(condition: bool, message: String) -> void:
 	_assertions += 1

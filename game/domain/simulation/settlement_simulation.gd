@@ -96,7 +96,10 @@ func _process_event(event: Dictionary) -> Dictionary:
 	var payload: Dictionary = event["payload"]
 	if not payload.has("resource_id") or not payload.has("amount"):
 		return {"ok": false, "error": "Resource event payload is incomplete"}
-	if not payload["resource_id"] is String or not payload["amount"] is int:
+	if not payload["resource_id"] is String or not _is_integral_number(payload["amount"]):
 		return {"ok": false, "error": "Resource event payload has invalid types"}
 	var transaction: Dictionary = resources.apply_transaction({str(payload["resource_id"]): int(payload["amount"])})
 	return {"ok": bool(transaction["ok"]), "error": str(transaction.get("error", "")), "resource_id": str(payload["resource_id"]), "amount": int(payload["amount"])}
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))
