@@ -245,3 +245,63 @@ EchoesOfTomorrow/
 - Desktop UI scaling and input support.
 
 No runtime implementation should assume these are settled until the relevant ADR or spike is complete.
+
+
+## 16. Selected baseline decisions (0.1.1)
+
+The following are the project defaults. They replace earlier undecided options unless superseded by a later ADR.
+
+| Area | Selected approach | Rationale |
+|---|---|---|
+| Engine | Godot 4.7.2-stable, exact version pinned | Stable release, avoids beta churn and makes agent/CI environments reproducible |
+| Language | Typed GDScript | Native engine integration, straightforward headless workflows, one scripting path across target platforms |
+| Authored content | JSON + JSON Schema | Diffable, portable, agent-friendly and independent of scene/node structure |
+| Engine-native assets | Godot Resources/scenes | Use native formats where editor integration and asset references matter |
+| Settings | ConfigFile | Small user preferences, separate from campaign state |
+| Campaign saves | Versioned JSON snapshots | Small first-slice state, inspectable, easy to validate/migrate and portable |
+| Simulation | Integer-minute clock + deterministic scheduled events | Frame-rate independent and efficient when the world is idle |
+| NPC AI | Provider-neutral gateway + strict response schema | Optional, testable, replaceable and safe to run offline |
+
+### 16.1 Language and headless workflow
+
+All gameplay/domain logic should be written in typed GDScript unless a measured performance or integration requirement proves otherwise. CI and agents should run import, parse, validation and test commands using the pinned Godot executable in headless mode. Do not depend on opening the editor or clicking UI for routine validation.
+
+### 16.2 Content and runtime separation
+
+JSON files define authored content such as resources, buildings, recipes, inventions, NPC templates and event definitions. Each content file has stable IDs and a schema version. Godot scenes and Resources represent engine-native presentation assets, not the canonical source for balance-critical domain data.
+
+A content loader parses JSON into validated domain data. Domain systems must not retain arbitrary mutable dictionaries from the parser; convert to typed domain objects or validated immutable data structures at the boundary.
+
+### 16.3 Persistence
+
+Use ConfigFile only for settings. Campaign progress is serialized through an explicit Save DTO to a versioned JSON snapshot under user://. The save manager validates the DTO, writes a temporary file, flushes/closes it, retains the previous known-good save, then replaces the active file. On load, validate schema and content compatibility before constructing runtime state.
+
+Do not serialize live Nodes, Object references, scene paths as identity, or executable Resources. Persist stable IDs and plain data. SQLite is deferred until profiling demonstrates that save size, query complexity or concurrent access justify the added portability and migration cost.
+
+### 16.4 Simulation scheduler
+
+Use integer game minutes as the canonical clock. Advance simulation through application commands, not _process or _physics_process. A deterministic scheduler processes due events ordered by (scheduled_minute, priority, stable_sequence_id). Repeating systems register at explicit intervals (hourly, daily, weekly) and event-driven systems schedule only when needed. All random outcomes use injected seeded random streams.
+
+The render loop reads snapshots and interpolates presentation only. Changing FPS must not change world outcomes.
+
+### 16.5 AI boundary
+
+The NPC AI gateway is an optional infrastructure service. It receives a bounded context DTO and returns a strictly parsed response DTO. It cannot access the scene tree, save manager, filesystem or arbitrary application tools. Any proposed social intent is mapped to a small allowlist and validated by the application layer before a domain command is issued. Timeouts, malformed output, provider failure and offline mode fall back to authored dialogue or deterministic behavior.
+
+A shipped client must not contain a private provider API key. Cloud inference, if enabled, must go through a controlled backend/proxy with authentication, rate limits, budget controls and data minimization.
+
+## 17. Platform portability
+
+Windows is the first supported development and release target. Android is the second target and must receive touch-first layout and device-performance validation. Web is a later target, not a launch promise: it requires the Godot Compatibility renderer, browser/WASM/WebGL2 validation, memory and download-size budgets, and review of browser networking/storage constraints. Avoid native-only dependencies in core modules.
+
+## 18. Validation gates before runtime implementation
+
+The architecture spike must prove:
+- Godot 4.7.2-stable opens and imports the repository headlessly.
+- Typed GDScript domain code parses and runs in a headless test scene/script.
+- JSON content is schema-validated and converted into typed data.
+- A deterministic scheduler produces identical state for identical seeds and command sequences.
+- JSON save/load round-trips and rejects corrupt/unsupported files safely.
+- UI layout scales at desktop and narrow/touch-oriented resolutions.
+- A minimal Windows export succeeds; Android export is tested when export templates/toolchain are available.
+- Web export is a separate feasibility test and is not allowed to dictate premature compromises to the first Windows slice.

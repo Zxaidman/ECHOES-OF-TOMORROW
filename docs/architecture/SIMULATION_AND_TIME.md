@@ -72,3 +72,34 @@ The first slice has 25–30 inhabitants. Use simple per-character needs for impo
 - Which systems require hourly versus daily updates.
 - How disease spreads and resolves at the first-slice level.
 - How to represent sleeping, travel and off-screen work.
+
+
+## 8. Selected scheduler contract (0.1.1)
+
+The canonical simulation time is an integer count of in-game minutes from the campaign epoch. No floating-point time accumulation is allowed in domain state.
+
+The application advances time with an explicit command such as AdvanceTime(minutes). The scheduler processes all due events up to the requested target time in chronological order. Events are ordered by:
+1. scheduled minute,
+2. explicit priority,
+3. monotonically increasing stable sequence ID.
+
+Recurring work is scheduled at explicit boundaries:
+- Hourly: schedules and selected needs/condition updates.
+- Daily: production, consumption, upkeep, aggregate settlement review and NPC goal reconsideration.
+- Weekly: long-term planning and strategic summaries.
+- Event-driven: travel arrival, construction completion, trade delivery, threshold crossing and similar discrete outcomes.
+
+These are initial cadence defaults, not permission to update every entity at every interval. A system must document why it needs its cadence.
+
+## 9. Pause and speed
+
+The player may pause or choose a simulation speed. Speed changes only how quickly the application requests game-time advancement; it must not alter the order or result of simulation events. UI animation and rendering are not authoritative.
+
+## 10. Scheduler acceptance tests
+
+- Equal seed + equal initial state + equal ordered commands => equal final state and event sequence.
+- Events with the same scheduled minute resolve in stable priority/sequence order.
+- Advancing 120 minutes in one command produces the same result as two 60-minute advances, provided no player command occurs between them.
+- Pausing causes no simulation-time advancement.
+- Different render frame rates do not change simulation results.
+- A save/load round trip preserves clock, scheduled events, sequence IDs and random stream state.

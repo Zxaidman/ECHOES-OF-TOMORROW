@@ -5,7 +5,7 @@ These instructions apply to coding agents and automated contributors working in 
 ## Project identity
 
 - Project: Echoes of Tomorrow
-- Current project version: 0.1.0
+- Current project version: 0.1.1
 - Current phase: pre-production documentation
 - Game direction: one-way time travel from a collapsed future to a medieval past; broad future knowledge; civilization reconstruction; important AI-assisted NPCs.
 - Initial vertical slice: The First Spark.
@@ -57,6 +57,21 @@ After changing code:
 - Never overwrite user work or remove existing features without explicit authorization.
 - Do not commit secrets, tokens, credentials, private keys or personal data.
 
+## Selected architecture baseline (0.1.1)
+
+- Engine: Godot 4.7.2-stable, pinned for reproducible builds; do not upgrade automatically.
+- Language: typed GDScript. Do not introduce C#, GDExtension or native plugins without an ADR and a demonstrated need.
+- Authored game content: versioned JSON definitions validated against JSON Schema. Godot Resources are reserved for engine-native assets/configuration where they add clear value.
+- Player settings: ConfigFile. Game progress: versioned JSON snapshot in user://, with atomic replacement and a previous-good backup. Do not add SQLite for the first vertical slice.
+- Simulation: integer-minute game clock and deterministic scheduled-event processing; never couple simulation to render frames.
+- NPC AI: provider-neutral gateway. LLM output is untrusted, schema-validated and resolved through allowlisted application commands. No provider secret in a client build; core gameplay must work offline.
+- Platform order: Windows first, Android second, Web as a later compatibility target. Avoid platform-specific dependencies in domain code.
+
 ## Current implementation boundary
 
 The repository is currently documentation-only. Do not invent an existing Godot project structure or claim that a playable build exists. Runtime implementation should start only after the architecture baseline and first-slice acceptance criteria are reviewed.
+
+
+## Cross-platform rule
+
+Do not assume a feature works on all targets because it works on Windows. Keep platform APIs behind adapters, use Godot's portable APIs, and maintain separate Windows, Android and Web smoke-test gates. Web builds must use the Compatibility renderer and must not depend on native extensions. Any platform-specific exception requires documentation and a fallback.

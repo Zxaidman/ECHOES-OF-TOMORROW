@@ -1,10 +1,11 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.1.0  
+**Project version:** 0.1.1  
 **Phase:** Pre-production  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
-**Engine direction:** Godot 4.x  
+**Engine:** Godot 4.7.2-stable (pinned baseline)
+**Language:** GDScript (primary)  
 **Primary implementation language:** GDScript (provisional; validate before runtime implementation)
 
 > You know how humanity's future unfolds. You have one opportunity to change it. But changing history is harder than knowing the future.
@@ -29,12 +30,14 @@ This repository contains the pre-production documentation baseline. It is not ye
 - [Game Design Document](docs/design/GAME_DESIGN_DOCUMENT.md)
 - [Technical Architecture](docs/architecture/TECHNICAL_ARCHITECTURE.md)
 - [Simulation and Time Model](docs/architecture/SIMULATION_AND_TIME.md)
+- [Platform Compatibility](docs/architecture/PLATFORM_COMPATIBILITY.md)
 - [NPC Intelligence](docs/systems/NPC_INTELLIGENCE.md)
 - [Knowledge and Invention](docs/systems/KNOWLEDGE_AND_INVENTION.md)
 - [World and Timeline](docs/systems/WORLD_AND_TIMELINE.md)
 - [UX, DX and AX Standard](docs/standards/UX_DX_AX_STANDARD.md)
 - [Vertical Slice 0.1.0](docs/production/VERTICAL_SLICE_0.1.0.md)
 - [Roadmap](docs/production/ROADMAP.md)
+- [Save and Content Data Strategy](docs/architecture/DATA_AND_PERSISTENCE.md)
 - [Architecture Decision Records](docs/adr/README.md)
 - [Agent Instructions](AGENTS.md)
 - [Contributing](CONTRIBUTING.md)
@@ -52,3 +55,8 @@ The project uses semantic versioning: `MAJOR.MINOR.PATCH`. During pre-production
 ## Working agreement
 
 Do not introduce engine scenes, plugins, external services, paid APIs or dependencies without recording the reason, expected benefit, fallback and verification plan. Never commit secrets or API keys.
+
+
+## Architecture decisions — 0.1.1
+
+The selected baseline is typed GDScript on Godot 4.7.2-stable; JSON for authored game content and versioned save snapshots; ConfigFile for player settings; an integer-minute deterministic simulation clock with scheduled event processing; and a provider-neutral, schema-validated NPC AI gateway. See the architecture documents and ADRs for rationale and constraints. Windows is the first release target, Android is the second, and Web is a later compatibility target that must pass its own export and browser performance gate.
