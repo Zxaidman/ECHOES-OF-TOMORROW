@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "resources": [
+    { "id": "food", "name": "Food", "starting_amount": 120, "unit": "stores" },
+    { "id": "wood", "name": "Timber", "starting_amount": 80, "unit": "logs" },
+    { "id": "stone", "name": "Stone", "starting_amount": 45, "unit": "blocks" },
+    { "id": "iron_ore", "name": "Iron ore", "starting_amount": 12, "unit": "loads" },
+    { "id": "tools", "name": "Tools", "starting_amount": 18, "unit": "sets" },
+    { "id": "medicine", "name": "Medicine", "starting_amount": 6, "unit": "kits" }
+  ]
+}

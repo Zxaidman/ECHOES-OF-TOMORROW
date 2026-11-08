@@ -1,0 +1,83 @@
+name: Development Release
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "project.godot"
+      - "scenes/**"
+      - "game/**"
+      - "content/**"
+      - "tests/**"
+      - "export_presets.cfg"
+      - ".github/workflows/dev-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dev-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-release:
+    name: Build Windows development release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download pinned Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip \
+            --output /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*' | head -n 1)"
+          test -n "$GODOT_BIN"
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
+
+      - name: Install Windows export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz \
+            --output /tmp/godot-templates.tpz
+          mkdir -p /tmp/godot-templates ~/.local/share/godot/export_templates/4.7.2.stable
+          unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
+          cp -a /tmp/godot-templates/templates/. ~/.local/share/godot/export_templates/4.7.2.stable/
+
+      - name: Run tests before packaging
+        run: |
+          "$GODOT_BIN" --headless --editor --path . --quit
+          "$GODOT_BIN" --headless --path . --script res://tests/run_tests.gd
+
+      - name: Export Windows development build
+        run: |
+          mkdir -p build
+          "$GODOT_BIN" --headless --path . --export-release "Windows Desktop" build/EchoesOfTomorrow.exe
+          cd build
+          zip -9 EchoesOfTomorrow-windows-x86_64.zip EchoesOfTomorrow.exe
+          sha256sum EchoesOfTomorrow-windows-x86_64.zip > EchoesOfTomorrow-windows-x86_64.zip.sha256
+
+      - name: Publish GitHub prerelease (no Actions artifacts)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^config\/version="\([^"]*\)"/\1/p' project.godot | head -n 1)"
+          test -n "$VERSION"
+          TAG="v${VERSION}-dev.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            build/EchoesOfTomorrow-windows-x86_64.zip \
+            build/EchoesOfTomorrow-windows-x86_64.zip.sha256 \
+            --prerelease \
+            --title "Echoes of Tomorrow ${VERSION} Development Build ${GITHUB_RUN_NUMBER}" \
+            --notes "Automated development build from commit ${GITHUB_SHA}. This is a prerelease, not a stable release. Download the Windows x86_64 ZIP and verify it with the accompanying SHA-256 file."
