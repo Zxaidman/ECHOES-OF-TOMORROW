@@ -19,3 +19,4 @@ ADRs capture important technical decisions and their rationale. Accepted decisio
 - [ADR-0006: Deterministic scheduled simulation](0006-deterministic-scheduled-simulation.md)
 - [ADR-0007: Validated NPC AI gateway](0007-validated-npc-ai-gateway.md)
 - [ADR-0008: Cross-platform target strategy](0008-cross-platform-target-strategy.md)
+- [ADR-0009: Historical events are deterministic simulation commands](0009-historical-events-and-timeline.md)

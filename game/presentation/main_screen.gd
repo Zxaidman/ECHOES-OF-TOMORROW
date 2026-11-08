@@ -11,6 +11,7 @@ var _resource_grid: GridContainer
 var _population_summary_label: Label
 var _knowledge_container: VBoxContainer
 var _invention_container: VBoxContainer
+var _timeline_container: VBoxContainer
 
 func _ready() -> void:
 	_simulation = SettlementSimulation.new()
@@ -79,6 +80,13 @@ func _build_screen() -> void:
 			people_flow.add_child(_make_card(str(npc["name"]), str(npc["role"])))
 	else:
 		people_flow.add_child(_make_card("Content unavailable", str(people_result["error"])))
+	var timeline_heading: Label = Label.new()
+	timeline_heading.text = "HISTORICAL TIMELINE"
+	timeline_heading.add_theme_font_size_override("font_size",19)
+	page.add_child(timeline_heading)
+	_timeline_container = VBoxContainer.new()
+	_timeline_container.add_theme_constant_override("separation",8)
+	page.add_child(_timeline_container)
 	var knowledge_heading: Label = Label.new()
 	knowledge_heading.text = "FUTURE KNOWLEDGE"
 	knowledge_heading.add_theme_font_size_override("font_size", 19)
@@ -134,9 +142,54 @@ func _refresh_dashboard() -> void:
 	if _population_summary_label != null:
 		_population_summary_label.text = _simulation.population.get_overview_text()
 	_refresh_progression()
+	_refresh_timeline()
 	for resource_id: String in _resource_values:
 		var definition: Dictionary = _resource_values[resource_id]
 		_resource_grid.add_child(_make_card(str(definition["name"]), "%d %s" % [_simulation.resources.get_amount(resource_id), str(definition["unit"])]))
+
+func _refresh_timeline() -> void:
+	if _timeline_container == null:
+		return
+	_clear_container(_timeline_container)
+	for event: Dictionary in _simulation.timeline.get_pending_events():
+		var panel: PanelContainer = PanelContainer.new()
+		var stack: VBoxContainer = VBoxContainer.new()
+		stack.add_theme_constant_override("separation",6)
+		panel.add_child(stack)
+		var heading: Label = Label.new()
+		heading.text = "DECISION REQUIRED  ·  " + str(event.title)
+		heading.add_theme_font_size_override("font_size",16)
+		stack.add_child(heading)
+		var description: Label = Label.new()
+		description.text = str(event.description)
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		stack.add_child(description)
+		for choice: Dictionary in event.choices:
+			var choice_button: Button = Button.new()
+			choice_button.text = str(choice.label)
+			choice_button.tooltip_text = str(choice.description)
+			choice_button.pressed.connect(_on_timeline_choice_pressed.bind(str(event.id),str(choice.id)))
+			stack.add_child(choice_button)
+		_timeline_container.add_child(panel)
+	for entry: Dictionary in _simulation.timeline.get_timeline_entries():
+		var line: Label = Label.new()
+		var timing: String = "Original: Day %d" % (int(entry.original_minute) / 1440 + 1) if int(entry.original_minute) >= 0 else "Original: not scheduled"
+		if int(entry.resolution_minute) >= 0:
+			timing += "  ·  Resolved: Day %d" % (int(entry.resolution_minute) / 1440 + 1)
+		var outcome: String = str(entry.status).replace("_"," ").to_upper()
+		if bool(entry.changed):
+			outcome += "  ·  HISTORY ALTERED"
+		var outcome_detail: String = ""
+		if not str(entry.selected_choice_label).is_empty():
+			outcome_detail = "  ·  Expected: %s  ·  Chosen: %s" % [str(entry.baseline_choice_label),str(entry.selected_choice_label)]
+		line.text = "%s  ·  %s  ·  %s%s" % [str(entry.title),outcome,timing,outcome_detail]
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_timeline_container.add_child(line)
+
+func _on_timeline_choice_pressed(event_id: String, choice_id: String) -> void:
+	var result: Dictionary = _simulation.resolve_historical_choice(event_id,choice_id)
+	_status_label.text = "History updated: %s." % str(result.event.title) if result.ok else "Choice unavailable: %s" % str(result.error)
+	_refresh_dashboard()
 
 func _make_card(heading: String, value: String) -> PanelContainer:
 	var panel: PanelContainer = PanelContainer.new()

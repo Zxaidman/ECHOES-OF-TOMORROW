@@ -10,6 +10,7 @@ const SettlementSimulation = preload("res://game/domain/simulation/settlement_si
 const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
 const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
 const NPCDialogueGateway = preload("res://game/domain/population/npc_dialogue_gateway.gd")
+const HistoricalTimeline = preload("res://game/domain/simulation/historical_timeline.gd")
 var _failures: int = 0
 var _assertions: int = 0
 
@@ -24,6 +25,7 @@ func _run() -> void:
 	_test_random_streams()
 	_test_simulation_determinism()
 	_test_simulation_save_restore()
+	_test_historical_timeline()
 	_test_population_simulation()
 	_test_npc_memory_and_dialogue()
 	_test_knowledge_inventions()
@@ -149,6 +151,54 @@ func _expect(condition: bool, message: String) -> void:
 		push_error("FAIL: " + message)
 	else:
 		print("PASS: " + message)
+
+func _test_historical_timeline() -> void:
+	var simulation: SettlementSimulation = SettlementSimulation.new(480,321)
+	_expect(simulation.timeline.get_scheduled_events().size() == 1, "timeline schedules only its authored root event")
+	_expect(not simulation.resolve_historical_choice("harvest_crisis","organize_harvest").ok, "historical choice cannot resolve before its event triggers")
+	var advance: Dictionary = simulation.advance_time(120)
+	_expect(advance.ok, "simulation advances to the first historical event")
+	var pending: Array[Dictionary] = simulation.timeline.get_pending_events()
+	_expect(pending.size() == 1 and pending[0].id == "harvest_crisis", "historical event becomes a player decision when triggered")
+	var food_before: int = simulation.resources.get_amount("food")
+	var tools_before: int = simulation.resources.get_amount("tools")
+	var invalid: Dictionary = simulation.resolve_historical_choice("harvest_crisis","unknown_choice")
+	_expect(not invalid.ok, "unknown historical choice is rejected")
+	_expect(simulation.resources.get_amount("food") == food_before and simulation.resources.get_amount("tools") == tools_before, "invalid historical choice has no resource side effects")
+	var choice: Dictionary = simulation.resolve_historical_choice("harvest_crisis","organize_harvest")
+	_expect(choice.ok, "valid historical choice resolves")
+	_expect(simulation.resources.get_amount("food") == food_before + 8 and simulation.resources.get_amount("tools") == tools_before - 1, "historical choice applies its atomic resource consequences")
+	_expect(simulation.population.get_relationship("aldwin","elin").trust == 58, "historical choice changes the authored NPC relationship")
+	_expect(simulation.population.get_memory_count("elin") == 1, "historical consequence is recorded in the affected NPC memory")
+	var first_entry: Dictionary = {}
+	for entry: Dictionary in simulation.timeline.get_timeline_entries():
+		if entry.id == "harvest_crisis":
+			first_entry = entry
+	_expect(first_entry.get("status","") == "altered" and first_entry.get("changed",false), "timeline distinguishes an altered historical outcome")
+	_expect(simulation.timeline.get_scheduled_events().size() == 1, "resolved event activates its causal follow-up")
+	var saved_state: Dictionary = simulation.create_save_state()
+	var restored: SettlementSimulation = SettlementSimulation.new()
+	_expect(restored.restore_save_state(simulation.clock.current_minute,saved_state).ok, "historical timeline restores with campaign state")
+	_expect(restored.create_save_state() == saved_state, "timeline and simulation snapshots round-trip exactly")
+	var follow_up: Dictionary = restored.advance_time(1440)
+	_expect(follow_up.ok and restored.timeline.get_pending_events().size() == 1, "causal follow-up becomes a pending event")
+	var second_choice: Dictionary = restored.resolve_historical_choice("village_compact","keep_customs")
+	_expect(second_choice.ok, "follow-up event accepts a valid choice")
+	var second_entry: Dictionary = {}
+	for entry: Dictionary in restored.timeline.get_timeline_entries():
+		if entry.id == "village_compact":
+			second_entry = entry
+	_expect(second_entry.get("status","") == "preserved" and not second_entry.get("changed",true), "baseline choice is recorded as preserved history")
+	var legacy_simulation: SettlementSimulation = SettlementSimulation.new(480,321)
+	var legacy_state: Dictionary = legacy_simulation.create_save_state()
+	legacy_state.erase("timeline")
+	var migrated: SettlementSimulation = SettlementSimulation.new()
+	_expect(migrated.restore_save_state(legacy_simulation.clock.current_minute,legacy_state).ok, "0.6.0 save migrates by initializing the new timeline")
+	var tampered: Dictionary = saved_state.duplicate(true)
+	tampered.timeline.records.harvest_crisis.status = "altered"
+	tampered.timeline.records.harvest_crisis.changed = false
+	var rejected: SettlementSimulation = SettlementSimulation.new()
+	_expect(not rejected.restore_save_state(simulation.clock.current_minute,tampered).ok, "inconsistent timeline save metadata is rejected")
 
 func _test_population_simulation() -> void:
 	var population: PopulationSimulation = PopulationSimulation.new()

@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "id": "harvest_crisis",
+      "title": "The Harvest Crisis",
+      "description": "A late storm threatens the village harvest. The old records say the reeve rationed the remaining stores, but your knowledge gives the settlement another option.",
+      "scheduled_minute": 600,
+      "baseline_choice_id": "ration_stores",
+      "choices": [
+        {
+          "id": "organize_harvest",
+          "label": "Organize a shared harvest",
+          "description": "Use tools and coordinated labour to recover more food.",
+          "requirements": {"tools": 1},
+          "resource_deltas": {"food": 8, "tools": -1},
+          "relationship_updates": [{"source": "aldwin", "target": "elin", "trust": 8, "cooperation": 10}],
+          "memories": [
+            {"npc_id": "elin", "summary": "The reeve organized a shared harvest that saved food stores.", "importance": 82, "source": "witnessed", "confidence": 100, "participants": ["aldwin", "elin"], "tags": ["harvest", "cooperation", "leadership"]},
+            {"npc_id": "aldwin", "summary": "The village recovered food through shared harvest work.", "importance": 76, "source": "witnessed", "confidence": 100, "participants": ["aldwin", "elin"], "tags": ["harvest", "cooperation"]}
+          ],
+          "follow_up": {"event_id": "village_compact", "delay_minutes": 1440}
+        },
+        {
+          "id": "ration_stores",
+          "label": "Follow the historical ration plan",
+          "description": "Preserve tools and distribute the existing stores carefully.",
+          "requirements": {},
+          "resource_deltas": {"food": 2},
+          "relationship_updates": [{"source": "aldwin", "target": "elin", "trust": -3, "cooperation": 0}],
+          "memories": [
+            {"npc_id": "aldwin", "summary": "The village followed the old ration plan during the harvest crisis.", "importance": 60, "source": "witnessed", "confidence": 100, "participants": ["aldwin", "elin"], "tags": ["harvest", "rationing"]}
+          ],
+          "follow_up": {"event_id": "village_compact", "delay_minutes": 1440}
+        }
+      ]
+    },
+    {
+      "id": "village_compact",
+      "title": "A Village Compact",
+      "description": "The harvest crisis has changed how the villagers see their future. They must decide whether to formalize shared work or return to familiar customs.",
+      "scheduled_minute": -1,
+      "baseline_choice_id": "keep_customs",
+      "choices": [
+        {
+          "id": "shared_work",
+          "label": "Establish shared work days",
+          "description": "Coordinate labour and pool timber for common projects.",
+          "requirements": {"wood": 2},
+          "resource_deltas": {"food": 3, "wood": -2},
+          "relationship_updates": [{"source": "aldwin", "target": "edric", "trust": 10, "cooperation": 12}],
+          "memories": [
+            {"npc_id": "edric", "summary": "The village agreed to coordinate shared work days.", "importance": 78, "source": "witnessed", "confidence": 100, "participants": ["aldwin", "edric"], "tags": ["community", "cooperation", "construction"]}
+          ],
+          "follow_up": {}
+        },
+        {
+          "id": "keep_customs",
+          "label": "Keep the old customs",
+          "description": "Avoid a new agreement and preserve existing work arrangements.",
+          "requirements": {},
+          "resource_deltas": {"food": 1},
+          "relationship_updates": [],
+          "memories": [
+            {"npc_id": "aldwin", "summary": "The village chose to keep its existing work customs.", "importance": 52, "source": "witnessed", "confidence": 100, "participants": ["aldwin"], "tags": ["community", "tradition"]}
+          ],
+          "follow_up": {}
+        }
+      ]
+    }
+  ]
+}

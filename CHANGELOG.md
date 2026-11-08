@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.0] - Development
+
+### Added
+- Authored historical event catalog with stable IDs, trigger times, baseline outcomes and bounded player choices.
+- Deterministic timeline triggers integrated into the integer-minute event queue.
+- Resource requirements, atomic resource consequences, NPC relationship changes and event-linked NPC memories.
+- Causal follow-up events scheduled from resolved player choices.
+- Original timeline baseline compared with preserved or altered campaign outcomes.
+- Timeline persistence, restore validation and migration from 0.6.0 campaign saves.
+- Dashboard timeline view with pending decisions and historical outcome status.
+
+### Notes
+- Historical content is an authored vertical-slice sample, not a full world-history simulator.
+- Manual playtesting remains deferred until 1.0.0.
+
+
 ## [0.6.0] - Development
 
 ### Added
