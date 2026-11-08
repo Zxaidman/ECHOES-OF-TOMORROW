@@ -70,7 +70,7 @@ Persist stable IDs and plain data only. Do not serialize live Node references, a
 7. Replace the active snapshot.
 8. Report success only after the final operation succeeds.
 
-On load, validate schema version, content compatibility and required references before creating runtime state. If the active save is corrupt, offer recovery from the previous known-good backup and clearly explain the result.
+On load, validate schema version, content compatibility and required references before creating runtime state. If the active save is missing or corrupt, validate and load the previous known-good backup when available, report recovery clearly, and never silently overwrite the damaged active file.
 
 ## 6. Migration policy
 

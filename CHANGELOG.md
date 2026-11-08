@@ -1,3 +1,22 @@
+## [1.0.0-rc.1] - Release Candidate
+
+### Added
+- Memory-aware offline NPC conversations through the validated dialogue gateway.
+- Previous-known-good save recovery when the active save is missing or corrupt.
+- Responsive resource layout for narrow and desktop windows.
+- Strict facility knowledge references and invention-to-facility validation.
+- Manual 1.0.0 acceptance checklist.
+
+### Reliability
+- Temporary save verification checks the complete DTO before replacing the active save.
+- Backup recovery is reported explicitly and never silently overwrites the damaged active file.
+- Regression coverage for backup recovery and NPC-scoped conversations.
+
+### Release boundary
+- Windows desktop is the only release target in this candidate.
+- Android and Web, live cloud AI, trade, diplomacy, regional maps and multiple settlements are excluded.
+- Stable 1.0.0 remains gated on the manual playtest checklist.
+
 ## [0.9.0] - Development
 
 ### Added

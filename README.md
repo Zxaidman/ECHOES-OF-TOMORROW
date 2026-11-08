@@ -1,7 +1,7 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.9.0  
-**Phase:** UX, facilities and reliability  
+**Project version:** 1.0.0-rc.1  
+**Phase:** First playable release candidate  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
 **Engine:** Godot 4.7.2-stable  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The repository now includes deterministic settlement and population simulation, persistent structured NPC memories with deterministic retrieval and decay, a provider-neutral bounded dialogue contract with offline fallback, a data-driven knowledge library, nine inventions, authored historical events with player-driven causal choices, original-versus-altered timeline records, a derived First Spark objective chain, persisted production counts, facility construction and facility-gated invention production. The interface uses focused tabs for settlement, people, history, knowledge and production. Manual playtesting is deferred until the 1.0.0 release candidate.
+The 1.0.0 release candidate is a Windows-first, offline-capable First Spark campaign. It includes deterministic settlement and population simulation, five named NPCs with memory-aware offline conversations, historical choices, knowledge and invention progression, four facilities, facility-gated production, and campaign save/recovery. Trade, diplomacy, a regional map, multiple settlements, worker assignment and live cloud AI are not part of this release candidate. Manual acceptance testing is required before stable 1.0.0.
 
 ## Run locally
 
@@ -49,6 +49,8 @@ godot --headless --path . --script res://tests/run_tests.gd
 - See docs/production/CI_AND_RELEASES.md.
 
 ## Documentation
+
+- 1.0.0 release-candidate playtest: docs/production/PLAYTEST_1.0.0.md
 
 - Game Design Document: docs/design/GAME_DESIGN_DOCUMENT.md
 - Technical Architecture: docs/architecture/TECHNICAL_ARCHITECTURE.md

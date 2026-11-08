@@ -2,8 +2,8 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 0.9.0
-- Current phase: UX, facilities and reliability
+- Current project version: 1.0.0-rc.1
+- Current phase: 1.0.0 release candidate validation
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
