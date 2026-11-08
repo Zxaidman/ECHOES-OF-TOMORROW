@@ -1,6 +1,8 @@
 # Production Roadmap
 
-**Roadmap version:** 0.1.0
+**Roadmap version:** 0.1.1
+
+Architecture decisions for engine/language, content data, persistence, simulation scheduling and NPC AI boundaries are recorded in ADR-0003 through ADR-0008.
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
