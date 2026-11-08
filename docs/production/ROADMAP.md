@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.5.0
+**Roadmap version:** 0.6.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -23,6 +23,18 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 - Intermediate milestones are validated with headless import, automated tests, CI and reproducible development exports.
 - Manual desktop playtesting, UX walkthrough and save/reload playtesting are intentionally deferred until the 1.0.0 release candidate.
 - 1.0.0 cannot be declared ready until the complete manual playtest checklist is passed and critical issues are resolved.
+
+## 0.6.0 implementation status
+
+- [x] Structured per-NPC memories with stable IDs, event references, provenance, confidence and bounded participants/tags
+- [x] Deterministic memory relevance ranking, age-based decay and bounded retention
+- [x] NPC-scoped memory retrieval and save/restore validation
+- [x] 0.5.0 campaign save migration with empty memory defaults
+- [x] Provider-neutral bounded dialogue request/response DTOs and allowlisted intents
+- [x] Strict response validation, target and supplied-memory reference checks
+- [x] Deterministic offline dialogue fallback; no client-side provider credentials or network dependency
+- [ ] Live cloud provider adapter and controlled backend deferred until a secure service is designed
+- [ ] Manual playtest deferred to 1.0.0 release gate
 
 ## 0.5.0 implementation status
 

@@ -2,8 +2,8 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 0.5.0
-- Current phase: knowledge and invention
+- Current project version: 0.6.0
+- Current phase: NPC memory and optional AI
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
@@ -21,7 +21,7 @@
 2. LLM output is untrusted and must be validated before any game command.
 3. LLMs never write directly to saves or authoritative state.
 4. Core gameplay works offline and without an LLM provider.
-5. Important NPC memory is structured, bounded, versioned and persisted.
+5. Important NPC memory is structured, bounded, versioned and persisted; retrieval is deterministic and NPC-scoped.
 6. Randomness uses explicit seeded streams.
 7. UI scenes do not own domain rules.
 8. Authored content is data-driven and validated at load boundaries.
@@ -54,4 +54,4 @@ Before changing code, inspect relevant docs and contracts. After changes, run he
 - Never claim a build passed unless the workflow run succeeded.
 
 ## Current implementation boundary
-Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, daily food upkeep, data-driven knowledge, nine invention definitions, prototype validation, production commissioning and save restoration. Not implemented: construction systems, optional LLM dialogue, Android/Web exports. Manual desktop playtesting is deliberately deferred until the 1.0.0 release candidate.
+Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, bounded persistent NPC memories, deterministic memory retrieval and decay, validated dialogue DTOs and offline fallback, data-driven knowledge, nine invention definitions, prototype validation, production commissioning and save restoration. Not implemented: a live provider adapter or secure inference backend, construction systems, Android/Web exports. Manual desktop playtesting is deliberately deferred until the 1.0.0 release candidate.

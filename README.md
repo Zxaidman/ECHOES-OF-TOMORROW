@@ -1,7 +1,7 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.5.0  
-**Phase:** Knowledge and invention  
+**Project version:** 0.6.0  
+**Phase:** NPC memory and optional AI  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
 **Engine:** Godot 4.7.2-stable  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The repository now includes deterministic settlement and population simulation, a data-driven knowledge library, nine inventions across agriculture, metallurgy and mechanical engineering, prerequisite and skill gates, prototype validation, commissioned production and campaign persistence. This remains a development systems slice; manual playtesting is intentionally deferred until the 1.0.0 release candidate.
+The repository now includes deterministic settlement and population simulation, persistent structured NPC memories with deterministic retrieval and decay, a provider-neutral bounded dialogue contract with offline fallback, a data-driven knowledge library, nine inventions and campaign persistence. This remains a development systems slice; manual playtesting is intentionally deferred until the 1.0.0 release candidate.
 
 ## Run locally
 
