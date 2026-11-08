@@ -105,10 +105,12 @@ func resolve(event_id: String, choice_id: String, minute: int, resources: Resour
 			return {"ok":false,"error":"Historical choice contains an invalid resource requirement"}
 		if resources.get_amount(resource_id) < int(requirements[resource_id]):
 			return {"ok":false,"error":"Not enough %s for this choice" % str(resource_id)}
-	var deltas: Dictionary = selected.get("resource_deltas",{})
-	for resource_id: Variant in deltas:
-		if not resource_id is String or not resources.has_resource(resource_id) or typeof(deltas[resource_id]) != TYPE_INT:
+	var authored_deltas: Dictionary = selected.get("resource_deltas",{})
+	var deltas: Dictionary = {}
+	for resource_id: Variant in authored_deltas:
+		if not resource_id is String or not resources.has_resource(resource_id) or not _is_integral_number(authored_deltas[resource_id]):
 			return {"ok":false,"error":"Historical choice contains an invalid resource change"}
+		deltas[str(resource_id)] = int(authored_deltas[resource_id])
 	var relationship_updates: Array = selected.get("relationship_updates",[])
 	var updated_pairs: Dictionary = {}
 	for update: Variant in relationship_updates:
@@ -312,7 +314,7 @@ func _validate_definition(definition: Variant) -> Dictionary:
 			if not resource_id is String or not _is_integral_number(choice.requirements[resource_id]) or int(choice.requirements[resource_id]) < 0:
 				return {"ok":false,"error":"Historical choice has an invalid resource requirement"}
 		for resource_id: Variant in choice.resource_deltas:
-			if not resource_id is String or typeof(choice.resource_deltas[resource_id]) != TYPE_INT or int(choice.resource_deltas[resource_id]) == 0:
+			if not resource_id is String or not _is_integral_number(choice.resource_deltas[resource_id]) or int(choice.resource_deltas[resource_id]) == 0:
 				return {"ok":false,"error":"Historical choice has an invalid resource delta"}
 		var follow_up: Variant = choice.get("follow_up",{})
 		if not follow_up is Dictionary:
