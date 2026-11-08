@@ -1,12 +1,12 @@
 ; Echoes of Tomorrow — settlement simulation milestone
-; Project version: 1.0.0-rc.1
+; Project version: 1.0.0
 config_version=5
 
 [application]
 config/name="Echoes of Tomorrow"
 config/description="A deterministic civilization reconstruction simulation."
 run/main_scene="res://scenes/main.tscn"
-config/version="1.0.0-rc.1"
+config/version="1.0.0"
 
 [display]
 window/size/viewport_width=1440
@@ -19,3 +19,6 @@ window/stretch/mode="canvas_items"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.055, 0.067, 0.082, 1)
+
+[release]
+channel="rc.1"
