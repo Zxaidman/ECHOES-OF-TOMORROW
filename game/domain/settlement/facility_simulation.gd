@@ -71,9 +71,11 @@ func restore_save_state(state: Dictionary) -> Dictionary:
 	for facility_id: Variant in state.instances:
 		if not facility_id is String or not _definitions.has(str(facility_id)) or not state.instances[facility_id] is Dictionary: return {"ok": false, "error": "Unknown facility in save"}
 		var instance: Dictionary = state.instances[facility_id]
-		if str(instance.get("id", "")) != "facility-" + str(facility_id) or str(instance.get("type_id", "")) != str(facility_id) or typeof(instance.get("built_minute", null)) != TYPE_INT or int(instance.built_minute) < 0 or int(instance.built_minute) > MAX_MINUTE:
+		if str(instance.get("id", "")) != "facility-" + str(facility_id) or str(instance.get("type_id", "")) != str(facility_id) or not _is_integral(instance.get("built_minute", null)) or int(instance.built_minute) < 0 or int(instance.built_minute) > MAX_MINUTE:
 			return {"ok": false, "error": "Invalid facility instance: %s" % str(facility_id)}
-		restored[str(facility_id)] = instance.duplicate(true)
+		var normalized_instance: Dictionary = instance.duplicate(true)
+		normalized_instance["built_minute"] = int(instance.built_minute)
+		restored[str(facility_id)] = normalized_instance
 	for facility_id: String in _definitions:
 		if bool(_definitions[facility_id].starting) and not restored.has(facility_id): return {"ok": false, "error": "Save is missing starting facility: %s" % facility_id}
 	_instances = restored
