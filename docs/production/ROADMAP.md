@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.8.0
+**Roadmap version:** 0.9.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -15,7 +15,7 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 | 0.6.0 | NPC memory and optional AI | Structured memory, bounded dialogue integration and offline fallback |
 | 0.7.0 | Events and timeline | Causal event log and original/altered timeline presentation |
 | 0.8.0 | Vertical-slice content complete | End-to-end First Spark playable loop |
-| 0.9.0 | UX, balance and reliability | Acceptance tests, playtest fixes and performance validation |
+| 0.9.0 | UX, facilities and reliability | Facility-gated production, focused UI, migration and regression validation |
 | 1.0.0 | First playable release | Release criteria, documentation and reproducible build |
 
 ## Release acceptance policy
@@ -95,9 +95,20 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 - [ ] Headless validation and Windows development export
 - [ ] Manual playtest deferred to 1.0.0 release gate
 
+## 0.9.0 implementation status
+
+- [x] Data-driven farmstead, workshop, forge and watermill definitions
+- [x] Atomic construction with knowledge and resource prerequisites
+- [x] Facility state persisted in campaign snapshots
+- [x] 0.8.0 save migration to the starting farmstead
+- [x] Invention production gated by required facility
+- [x] Focused tabs and reduced interface copy
+- [x] Facility, migration, construction and production-gate tests
+- [ ] Headless validation and Windows export
+- [ ] Manual playtest deferred to 1.0.0
+
 ## Next work queue
 
-1. Expand the First Spark loop with facilities, construction and resource gathering so production depends on place and capacity, not only abstract recipes.
-2. Add facilities, construction and resource gathering to support repeatable production.
-3. Add skill development and time-based knowledge study.
-4. Expand historical event content, actor/location links and consequences across multiple settlements.
+1. Complete release hardening, deterministic regression coverage, save compatibility fixtures and UX acceptance checks.
+2. Validate the Windows release candidate manually before 1.0.0.
+3. Keep Android and Web outside the 1.0.0 promise until their separate platform gates pass.

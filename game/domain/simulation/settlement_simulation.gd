@@ -8,6 +8,7 @@ const RandomStreams = preload("res://game/domain/simulation/random_streams.gd")
 const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
 const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
 const HistoricalTimeline = preload("res://game/domain/simulation/historical_timeline.gd")
+const FacilitySimulation = preload("res://game/domain/settlement/facility_simulation.gd")
 const ContentCatalog = preload("res://game/infrastructure/content/content_catalog.gd")
 const RESOURCE_DELTA_EVENT: String = "resource_delta"
 const POPULATION_HOURLY_EVENT: String = "population_hourly_tick"
@@ -20,6 +21,7 @@ var random_streams: RandomStreams
 var population: PopulationSimulation
 var knowledge: KnowledgeInventionSystem
 var timeline: HistoricalTimeline
+var facilities: FacilitySimulation
 var event_log: Array[Dictionary] = []
 
 func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
@@ -42,6 +44,9 @@ func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
 	var knowledge_result: Dictionary = knowledge.initialize()
 	if not knowledge_result.ok:
 		push_error("Knowledge content initialization failed: " + str(knowledge_result.error))
+	facilities = FacilitySimulation.new()
+	var facility_result: Dictionary = facilities.initialize()
+	if not facility_result.ok: push_error("Facility content initialization failed: " + str(facility_result.error))
 	timeline = HistoricalTimeline.new()
 	var timeline_result: Dictionary = timeline.initialize(start_minute)
 	if not timeline_result.ok:
@@ -58,6 +63,10 @@ func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
 	var first_population_tick: int = mini(next_hour, next_meal)
 	events.schedule("population-hourly-tick", first_population_tick, 5, POPULATION_HOURLY_EVENT, {}, 60)
 
+func build_facility(facility_id: String) -> Dictionary:
+	return facilities.build(facility_id, knowledge, resources, clock.current_minute)
+func produce_invention(invention_id: String) -> Dictionary:
+	return knowledge.produce(invention_id, resources, facilities)
 func schedule_resource_delta(event_id: String, scheduled_minute: int, priority: int, resource_id: String, amount: int, repeat_interval: int = 0) -> Dictionary:
 	if scheduled_minute < clock.current_minute:
 		return {"ok": false, "error": "Cannot schedule an event in the past"}
@@ -108,7 +117,7 @@ func advance_time(minutes: int) -> Dictionary:
 	return {"ok": true, "processed_events": processed_count, "current_minute": clock.current_minute}
 
 func create_save_state() -> Dictionary:
-	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state(), "knowledge": knowledge.create_save_state(), "timeline": timeline.create_save_state()}
+	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state(), "knowledge": knowledge.create_save_state(), "timeline": timeline.create_save_state(), "facilities": facilities.create_save_state()}
 
 func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary:
 	if simulation_minute < 0 or simulation_minute > MAX_MINUTE or not state.has("resources") or not state["resources"] is Dictionary:
@@ -125,6 +134,8 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		return {"ok": false, "error": "Save contains invalid knowledge state"}
 	if state.has("timeline") and not state["timeline"] is Dictionary:
 		return {"ok": false, "error": "Save contains invalid timeline state"}
+	if state.has("facilities") and not state["facilities"] is Dictionary:
+		return {"ok": false, "error": "Save contains invalid facility state"}
 	var new_resources: ResourceLedger = ResourceLedger.new()
 	var resource_result: Dictionary = new_resources.restore(state["resources"])
 	if not resource_result["ok"]:
@@ -162,6 +173,13 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		if not knowledge_restore.ok:
 			return knowledge_restore
 	# 0.4.0 saves predate knowledge progression; initialize the new campaign defaults.
+	var new_facilities: FacilitySimulation = FacilitySimulation.new()
+	var facility_init: Dictionary = new_facilities.initialize()
+	if not facility_init.ok: return facility_init
+	if state.has("facilities"):
+		var facility_restore: Dictionary = new_facilities.restore_save_state(state["facilities"])
+		if not facility_restore.ok: return facility_restore
+	# 0.8.0 saves predate facilities; retain the starting farmstead.
 	var new_timeline: HistoricalTimeline = HistoricalTimeline.new()
 	var timeline_init: Dictionary = new_timeline.initialize(simulation_minute)
 	if not timeline_init.ok:
@@ -195,6 +213,7 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 	random_streams = new_random_streams
 	population = new_population
 	knowledge = new_knowledge
+	facilities = new_facilities
 	timeline = new_timeline
 	clock = SimulationClock.new(simulation_minute)
 	event_log.clear()
