@@ -8,6 +8,7 @@ var _resource_values: Dictionary = {}
 var _time_label: Label
 var _status_label: Label
 var _resource_grid: GridContainer
+var _population_summary_label: Label
 
 func _ready() -> void:
 	_simulation = SettlementSimulation.new()
@@ -15,7 +16,6 @@ func _ready() -> void:
 	if result["ok"]:
 		for definition: Dictionary in result["items"]:
 			_resource_values[str(definition["id"])] = definition
-	_simulation.schedule_resource_delta("daily-food-consumption", 540, 10, "food", -10, 1440)
 	_simulation.schedule_resource_delta("daily-farm-output", 600, 20, "food", 14, 1440)
 	_build_screen()
 	_refresh_dashboard()
@@ -56,6 +56,9 @@ func _build_screen() -> void:
 	_resource_grid.add_theme_constant_override("h_separation", 10)
 	_resource_grid.add_theme_constant_override("v_separation", 10)
 	page.add_child(_resource_grid)
+	_population_summary_label = Label.new()
+	_population_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	page.add_child(_population_summary_label)
 	var people_heading: Label = Label.new()
 	people_heading.text = "PEOPLE TO KNOW"
 	people_heading.add_theme_font_size_override("font_size", 17)
@@ -107,6 +110,8 @@ func _refresh_dashboard() -> void:
 	_time_label.text = "SIMULATION  ·  " + _simulation.clock.format_time()
 	for child: Node in _resource_grid.get_children():
 		child.queue_free()
+	if _population_summary_label != null:
+		_population_summary_label.text = _simulation.population.get_overview_text()
 	for resource_id: String in _resource_values:
 		var definition: Dictionary = _resource_values[resource_id]
 		_resource_grid.add_child(_make_card(str(definition["name"]), "%d %s" % [_simulation.resources.get_amount(resource_id), str(definition["unit"])]))

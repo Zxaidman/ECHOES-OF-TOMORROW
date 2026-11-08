@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "npcs": [
-    { "id": "mara", "name": "Mara", "role": "Village healer" },
-    { "id": "edric", "name": "Edric", "role": "Master carpenter" },
-    { "id": "elin", "name": "Elin", "role": "Farmer and seed keeper" },
-    { "id": "tomas", "name": "Tomas", "role": "Blacksmith apprentice" },
-    { "id": "aldwin", "name": "Aldwin", "role": "Village reeve" }
+    {"id":"mara","name":"Mara","role":"Village healer","age":34,"skills":{"medicine":72,"farming":12,"crafting":8}},
+    {"id":"edric","name":"Edric","role":"Master carpenter","age":46,"skills":{"crafting":78,"farming":18,"medicine":5}},
+    {"id":"elin","name":"Elin","role":"Farmer and seed keeper","age":29,"skills":{"farming":82,"crafting":16,"medicine":10}},
+    {"id":"tomas","name":"Tomas","role":"Blacksmith apprentice","age":19,"skills":{"crafting":48,"farming":14,"medicine":4}},
+    {"id":"aldwin","name":"Aldwin","role":"Village reeve","age":52,"skills":{"leadership":76,"farming":20,"crafting":12}}
   ]
 }

@@ -1,6 +1,6 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.3.0  
+**Project version:** 0.4.0  
 **Phase:** World and settlement simulation  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The repository now contains a deterministic settlement simulation foundation: scheduled resource events, an atomic resource ledger, independent seeded random streams, campaign state restoration and interactive time controls. This is an early playable systems slice, not the complete vertical slice.
+The repository now includes a deterministic settlement simulation with named NPCs, needs, daily schedules, directional relationships, population food upkeep, save restoration and interactive time controls. This is an early playable systems slice, not the complete vertical slice.
 
 ## Run locally
 

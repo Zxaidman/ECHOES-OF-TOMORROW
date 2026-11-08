@@ -7,6 +7,7 @@ const ScheduledEventQueue = preload("res://game/domain/simulation/scheduled_even
 const ResourceLedger = preload("res://game/domain/settlement/resource_ledger.gd")
 const RandomStreams = preload("res://game/domain/simulation/random_streams.gd")
 const SettlementSimulation = preload("res://game/domain/simulation/settlement_simulation.gd")
+const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
 var _failures: int = 0
 var _assertions: int = 0
 
@@ -21,6 +22,7 @@ func _run() -> void:
 	_test_random_streams()
 	_test_simulation_determinism()
 	_test_simulation_save_restore()
+	_test_population_simulation()
 	_test_save_round_trip()
 	print("Test summary: %d assertions, %d failures" % [_assertions, _failures])
 	quit(1 if _failures > 0 else 0)
@@ -94,7 +96,7 @@ func _test_simulation_determinism() -> void:
 	_expect(one_step.resources.to_dictionary() == split_steps.resources.to_dictionary(), "split and single advances preserve resources")
 	_expect(one_step.events.to_array() == split_steps.events.to_array(), "split and single advances preserve queue")
 	_expect(one_step.event_log.size() == split_steps.event_log.size(), "split and single advances process same event count")
-	_expect(one_step.resources.get_amount("food") == 124, "consumption and production resolve correctly")
+	_expect(one_step.resources.get_amount("food") == 111, "consumption and production resolve correctly")
 	_expect(not one_step.advance_time(-1)["ok"], "simulation rejects negative advance")
 	_expect(not one_step.schedule_resource_delta("past-event", 100, 0, "food", -1)["ok"], "simulation rejects events scheduled in the past")
 
@@ -131,7 +133,7 @@ func _test_save_round_trip() -> void:
 		_expect(restored.events.to_array() == simulation.events.to_array(), "snapshot preserves pending events")
 		var continued: Dictionary = restored.advance_time(60)
 		_expect(continued["ok"], "JSON-restored simulation continues")
-		_expect(restored.resources.get_amount("food") == 110, "JSON-restored event applies resource delta")
+		_expect(restored.resources.get_amount("food") == 97, "JSON-restored event applies resource delta")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path + ".bak"))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_saves"))
@@ -143,3 +145,24 @@ func _expect(condition: bool, message: String) -> void:
 		push_error("FAIL: " + message)
 	else:
 		print("PASS: " + message)
+
+func _test_population_simulation() -> void:
+	var population: PopulationSimulation = PopulationSimulation.new()
+	_expect(population.get_population_count() == 25, "population includes five named NPCs and twenty background residents")
+	_expect(population.get_npc("mara").get("role", "") == "Village healer", "named NPC template is instantiated")
+	_expect(population.get_activity_at("mara", 8 * 60) == "working", "NPC schedule resolves working hours")
+	_expect(population.get_activity_at("mara", 23 * 60) == "sleeping", "NPC schedule resolves sleep hours")
+	var before: Dictionary = population.get_npc("mara")
+	var ledger: ResourceLedger = ResourceLedger.new()
+	ledger.initialize({"food":30})
+	var tick: Dictionary = population.tick_hour(9 * 60, ledger)
+	_expect(tick["ok"], "population hourly tick succeeds")
+	_expect(ledger.get_amount("food") == 17, "population food upkeep is charged atomically")
+	_expect(int(population.get_npc("mara")["needs"]["hunger"]) > int(before["needs"]["hunger"]), "hunger increases over time")
+	_expect(population.set_relationship("mara","edric",{"trust":72,"cooperation":65,"conflict":8})["ok"], "directional relationship can be updated")
+	_expect(population.get_relationship("mara","edric")["trust"] == 72, "relationship values are readable")
+	_expect(population.get_relationship("edric","mara")["trust"] == 50, "relationships are directional")
+	var restored: PopulationSimulation = PopulationSimulation.new()
+	_expect(restored.restore_save_state(population.create_save_state())["ok"], "population state restores")
+	_expect(restored.create_save_state() == population.create_save_state(), "population snapshot round-trips exactly")
+	_expect(not restored.set_relationship("unknown","edric",{"trust":10})["ok"], "unknown NPC relationship target rejected")

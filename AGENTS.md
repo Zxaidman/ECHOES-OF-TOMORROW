@@ -2,8 +2,8 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 0.3.0
-- Current phase: world and settlement simulation
+- Current project version: 0.4.0
+- Current phase: population and NPC foundation
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
@@ -54,4 +54,4 @@ Before changing code, inspect relevant docs and contracts. After changes, run he
 - Never claim a build passed unless the workflow run succeeded.
 
 ## Current implementation boundary
-Implemented: settlement resources, atomic transactions, deterministic scheduled resource events, seeded RNG streams, save-state restoration and time controls. Not implemented: full population simulation, construction, inventions, NPC AI, Android/Web exports.
+Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, daily food upkeep, save restoration and time controls. Not implemented: construction, inventions, optional LLM dialogue, Android/Web exports.
