@@ -24,7 +24,8 @@
       },
       "production_output": {
         "food": 6
-      }
+      },
+      "facility_required": "farmstead"
     },
     {
       "id": "crop_rotation",
@@ -51,7 +52,8 @@
       },
       "production_output": {
         "food": 8
-      }
+      },
+      "facility_required": "farmstead"
     },
     {
       "id": "irrigation_channels",
@@ -81,7 +83,8 @@
       },
       "production_output": {
         "food": 12
-      }
+      },
+      "facility_required": "farmstead"
     },
     {
       "id": "bloomery_furnace",
@@ -109,7 +112,8 @@
       },
       "production_output": {
         "tools": 2
-      }
+      },
+      "facility_required": "forge"
     },
     {
       "id": "wrought_iron_tools",
@@ -138,7 +142,8 @@
       },
       "production_output": {
         "tools": 3
-      }
+      },
+      "facility_required": "forge"
     },
     {
       "id": "controlled_steel",
@@ -167,7 +172,8 @@
       },
       "production_output": {
         "tools": 5
-      }
+      },
+      "facility_required": "forge"
     },
     {
       "id": "waterwheel",
@@ -195,7 +201,8 @@
       },
       "production_output": {
         "food": 4
-      }
+      },
+      "facility_required": "workshop"
     },
     {
       "id": "gear_mill",
@@ -224,7 +231,8 @@
       },
       "production_output": {
         "tools": 1
-      }
+      },
+      "facility_required": "workshop"
     },
     {
       "id": "mechanical_pump",
@@ -254,7 +262,8 @@
       },
       "production_output": {
         "food": 8
-      }
+      },
+      "facility_required": "watermill"
     }
   ]
 }

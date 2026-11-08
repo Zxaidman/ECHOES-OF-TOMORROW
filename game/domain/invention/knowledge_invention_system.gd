@@ -38,8 +38,8 @@ func initialize() -> Dictionary:
 		return {"ok":false,"error":"Knowledge prerequisite cycle detected"}
 	var invention_defs: Dictionary = {}
 	for item: Dictionary in invention_result.items:
-		for field: String in ["name","category","description","validation_skill"]:
-			if not item.get(field,"") is String:
+		for field: String in ["name","category","description","validation_skill","facility_required"]:
+			if not item.get(field,"") is String or str(item.get(field,"")).is_empty():
 				return {"ok":false,"error":"Invalid invention field: %s" % field}
 		for field: String in ["knowledge_required","invention_prerequisites"]:
 			if not item.get(field,null) is Array:
@@ -141,10 +141,13 @@ func commission_production(item_id: String) -> Dictionary:
 	_progress[item_id] = progress
 	return {"ok":true,"status":"production_ready"}
 
-func produce(item_id: String, ledger: ResourceLedger) -> Dictionary:
+func produce(item_id: String, ledger: ResourceLedger, facilities: Variant = null) -> Dictionary:
 	if not _inventions.has(item_id) or str(_progress.get(item_id,{}).get("status","")) != "production_ready":
 		return {"ok":false,"error":"Production has not been commissioned"}
 	var definition: Dictionary = _inventions[item_id]
+	var required_facility: String = str(definition.get("facility_required", ""))
+	if not required_facility.is_empty() and (facilities == null or not facilities.has_facility(required_facility)):
+		return {"ok":false,"error":"Requires facility: %s" % required_facility}
 	var changes: Dictionary = {}
 	for resource_id: String in definition.production_cost:
 		changes[resource_id] = -int(definition.production_cost[resource_id])
@@ -171,7 +174,7 @@ func get_knowledge_entries(population: PopulationSimulation, ledger: ResourceLed
 		result.append({"id":item_id,"name":str(definition.name),"description":str(definition.description),"known":_known.has(item_id),"can_study":can_study,"missing_knowledge":missing,"missing_skills":skill.get("error",""),"missing_resources":_missing_resources(definition.study_cost,ledger)})
 	return result
 
-func get_invention_entries(population: PopulationSimulation, ledger: ResourceLedger) -> Array[Dictionary]:
+func get_invention_entries(population: PopulationSimulation, ledger: ResourceLedger, facilities: Variant = null) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for item_id: String in _sorted(_inventions):
 		var definition: Dictionary = _inventions[item_id]
@@ -186,10 +189,12 @@ func get_invention_entries(population: PopulationSimulation, ledger: ResourceLed
 				missing_inventions.append(prerequisite)
 		var skills: Dictionary = _check_skills(definition.skill_requirements,population)
 		var missing_resources: Array[String] = _missing_resources(definition.prototype_cost,ledger)
+		var required_facility: String = str(definition.get("facility_required", ""))
+		var missing_facility: bool = not required_facility.is_empty() and (facilities == null or not facilities.has_facility(required_facility))
 		var visible_status: String = str(progress.status)
 		if visible_status == "available" and (not missing_knowledge.is_empty() or not missing_inventions.is_empty() or not skills.ok or not missing_resources.is_empty()):
 			visible_status = "locked"
-		result.append({"id":item_id,"name":str(definition.name),"category":str(definition.category),"description":str(definition.description),"status":visible_status,"can_prototype":str(progress.status) == "available" and missing_knowledge.is_empty() and missing_inventions.is_empty() and skills.ok and missing_resources.is_empty(),"can_test":str(progress.status) == "prototype_built","can_commission":str(progress.status) == "validated","can_produce":str(progress.status) == "production_ready","missing_knowledge":missing_knowledge,"missing_inventions":missing_inventions,"missing_skills":skills.get("error",""),"missing_resources":missing_resources,"last_failure":str(progress.last_failure),"production_cost":definition.production_cost.duplicate(true),"production_output":definition.production_output.duplicate(true)})
+		result.append({"id":item_id,"name":str(definition.name),"category":str(definition.category),"description":str(definition.description),"status":visible_status,"can_prototype":str(progress.status) == "available" and missing_knowledge.is_empty() and missing_inventions.is_empty() and skills.ok and missing_resources.is_empty(),"can_test":str(progress.status) == "prototype_built","can_commission":str(progress.status) == "validated","can_produce":str(progress.status) == "production_ready" and not missing_facility,"missing_knowledge":missing_knowledge,"missing_inventions":missing_inventions,"missing_skills":skills.get("error",""),"missing_resources":missing_resources,"missing_facility":required_facility if missing_facility else "","last_failure":str(progress.last_failure),"production_cost":definition.production_cost.duplicate(true),"production_output":definition.production_output.duplicate(true)})
 	return result
 
 func is_knowledge_known(item_id: String) -> bool:
