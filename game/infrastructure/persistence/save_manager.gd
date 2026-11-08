@@ -65,8 +65,13 @@ func load_snapshot(path: String) -> Dictionary:
 		return {"ok": false, "error": "Unsupported save schema version"}
 	if not dto.has("campaign_id") or not dto.has("simulation_minute") or not dto.has("state"):
 		return {"ok": false, "error": "Save is missing required fields"}
-	if not dto["campaign_id"] is String or not dto["simulation_minute"] is int or not dto["state"] is Dictionary:
+	if not dto["campaign_id"] is String or not _is_integral_number(dto["simulation_minute"]) or not dto["state"] is Dictionary:
 		return {"ok": false, "error": "Save contains invalid field types"}
 	if int(dto["simulation_minute"]) < 0:
 		return {"ok": false, "error": "Save contains a negative simulation minute"}
+	dto["simulation_minute"] = int(dto["simulation_minute"])
 	return {"ok": true, "data": dto}
+
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))
