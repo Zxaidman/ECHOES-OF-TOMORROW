@@ -14,7 +14,7 @@ static func load_document(path: String) -> Dictionary:
 	if not parsed is Dictionary:
 		return {"ok": false, "error": "Content root must be a JSON object: %s" % path}
 	var document: Dictionary = parsed
-	if not document.has("schema_version") or not document["schema_version"] is int:
+	if not document.has("schema_version") or not _is_integral_number(document["schema_version"]):
 		return {"ok": false, "error": "Missing integer schema_version: %s" % path}
 	if int(document["schema_version"]) != 1:
 		return {"ok": false, "error": "Unsupported schema_version in %s" % path}
@@ -37,3 +37,7 @@ static func load_collection(path: String, collection_key: String) -> Dictionary:
 			return {"ok": false, "error": "Empty or duplicate id '%s' in %s" % [entry_id, path]}
 		seen_ids[entry_id] = true
 	return {"ok": true, "items": document[collection_key]}
+
+
+static func _is_integral_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))
