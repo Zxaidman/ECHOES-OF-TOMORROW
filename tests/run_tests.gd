@@ -35,13 +35,13 @@ func _test_clock() -> void:
 
 func _test_content_catalog() -> void:
 	var resources: Dictionary = ContentCatalog.load_collection("res://content/resources.json", "resources")
-	print("Resource loader result: ", resources)
-	_expect(resources["ok"], "resource content loads")
-	_expect(resources["items"].size() == 6, "six starter resources exist")
+	_expect(resources["ok"], "resource content loads: " + str(resources.get("error", "")))
+	if resources["ok"]:
+		_expect(resources["items"].size() == 6, "six starter resources exist")
 	var npcs: Dictionary = ContentCatalog.load_collection("res://content/npcs.json", "npcs")
-	print("NPC loader result: ", npcs)
-	_expect(npcs["ok"], "NPC content loads")
-	_expect(npcs["items"].size() == 5, "five starter NPCs exist")
+	_expect(npcs["ok"], "NPC content loads: " + str(npcs.get("error", "")))
+	if npcs["ok"]:
+		_expect(npcs["items"].size() == 5, "five starter NPCs exist")
 
 
 func _test_save_round_trip() -> void:
@@ -55,8 +55,7 @@ func _test_save_round_trip() -> void:
 	var saved: Dictionary = manager.save_snapshot(save_path, snapshot)
 	_expect(saved["ok"], "save snapshot writes")
 	var loaded: Dictionary = manager.load_snapshot(save_path)
-	print("Save loader result: ", loaded)
-	_expect(loaded["ok"], "save snapshot loads")
+	_expect(loaded["ok"], "save snapshot loads: " + str(loaded.get("error", "")))
 	if loaded["ok"]:
 		_expect(loaded["data"]["campaign_id"] == "test-campaign", "save preserves campaign id")
 		_expect(loaded["data"]["simulation_minute"] == 125, "save preserves simulation time")
