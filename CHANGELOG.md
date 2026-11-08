@@ -1,3 +1,16 @@
+## [0.8.0] - Development
+
+### Added
+- Derived First Spark campaign objectives tied directly to resolved historical events, researched knowledge, invention status and successful production.
+- Persisted invention production-run counters, including migration from 0.7.0 saves.
+- First Spark completion state requires a successful first production batch; objective state is derived and cannot drift from simulation state.
+- Campaign load action with campaign identity checks and restore validation.
+- Automated vertical-slice progression and save/restore coverage.
+
+### Notes
+- This milestone implements the first guided end-to-end campaign path; it does not complete all planned vertical-slice systems such as construction, trade, diplomacy or multi-settlement play.
+- Manual desktop playtesting remains deferred until 1.0.0.
+
 # Changelog
 
 ## [0.7.0] - Development

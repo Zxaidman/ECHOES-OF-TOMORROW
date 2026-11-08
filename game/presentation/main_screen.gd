@@ -3,6 +3,7 @@ extends Control
 const ContentCatalog = preload("res://game/infrastructure/content/content_catalog.gd")
 const SettlementSimulation = preload("res://game/domain/simulation/settlement_simulation.gd")
 const SaveManager = preload("res://game/infrastructure/persistence/save_manager.gd")
+const FirstSparkCampaign = preload("res://game/domain/simulation/first_spark_campaign.gd")
 var _simulation: SettlementSimulation
 var _resource_values: Dictionary = {}
 var _time_label: Label
@@ -12,9 +13,12 @@ var _population_summary_label: Label
 var _knowledge_container: VBoxContainer
 var _invention_container: VBoxContainer
 var _timeline_container: VBoxContainer
+var _objective_container: VBoxContainer
+var _campaign_progress: FirstSparkCampaign
 
 func _ready() -> void:
 	_simulation = SettlementSimulation.new()
+	_campaign_progress = FirstSparkCampaign.new()
 	var result: Dictionary = ContentCatalog.load_collection("res://content/resources.json", "resources")
 	if result["ok"]:
 		for definition: Dictionary in result["items"]:
@@ -48,6 +52,13 @@ func _build_screen() -> void:
 	_time_label = Label.new()
 	_time_label.add_theme_font_size_override("font_size", 22)
 	page.add_child(_time_label)
+	var objective_heading: Label = Label.new()
+	objective_heading.text = "FIRST SPARK · CAMPAIGN OBJECTIVES"
+	objective_heading.add_theme_font_size_override("font_size", 19)
+	page.add_child(objective_heading)
+	_objective_container = VBoxContainer.new()
+	_objective_container.add_theme_constant_override("separation", 6)
+	page.add_child(_objective_container)
 	var actions: HFlowContainer = HFlowContainer.new()
 	actions.add_theme_constant_override("h_separation", 8)
 	actions.add_theme_constant_override("v_separation", 8)
@@ -108,6 +119,10 @@ func _build_screen() -> void:
 	save_button.text = "Save campaign"
 	save_button.pressed.connect(_on_save_pressed)
 	footer.add_child(save_button)
+	var load_button: Button = Button.new()
+	load_button.text = "Load campaign"
+	load_button.pressed.connect(_on_load_pressed)
+	footer.add_child(load_button)
 	_status_label = Label.new()
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(_status_label)
@@ -132,6 +147,24 @@ func _on_save_pressed() -> void:
 	var result: Dictionary = manager.save_snapshot("user://saves/first_spark.json", snapshot)
 	_status_label.text = "Campaign saved." if result["ok"] else "Save failed: %s" % str(result["error"])
 
+func _on_load_pressed() -> void:
+	var manager: SaveManager = SaveManager.new()
+	var loaded: Dictionary = manager.load_snapshot("user://saves/first_spark.json")
+	if not loaded.ok:
+		_status_label.text = "Load failed: %s" % str(loaded.error)
+		return
+	if str(loaded.data.get("campaign_id", "")) != "first-spark-local":
+		_status_label.text = "Load failed: save belongs to another campaign."
+		return
+	var restored: SettlementSimulation = SettlementSimulation.new()
+	var restore_result: Dictionary = restored.restore_save_state(int(loaded.data.simulation_minute), loaded.data.state)
+	if not restore_result.ok:
+		_status_label.text = "Load failed: %s" % str(restore_result.error)
+		return
+	_simulation = restored
+	_status_label.text = "Campaign loaded."
+	_refresh_dashboard()
+
 func _refresh_dashboard() -> void:
 	if _time_label == null or _resource_grid == null:
 		return
@@ -141,11 +174,28 @@ func _refresh_dashboard() -> void:
 		child.queue_free()
 	if _population_summary_label != null:
 		_population_summary_label.text = _simulation.population.get_overview_text()
+	_refresh_campaign_objectives()
 	_refresh_progression()
 	_refresh_timeline()
 	for resource_id: String in _resource_values:
 		var definition: Dictionary = _resource_values[resource_id]
 		_resource_grid.add_child(_make_card(str(definition["name"]), "%d %s" % [_simulation.resources.get_amount(resource_id), str(definition["unit"])]))
+
+func _refresh_campaign_objectives() -> void:
+	if _objective_container == null or _campaign_progress == null:
+		return
+	_clear_container(_objective_container)
+	var progress: Dictionary = _campaign_progress.get_progress(_simulation)
+	for objective: Dictionary in progress.objectives:
+		var line: Label = Label.new()
+		var marker: String = "[DONE]" if bool(objective.complete) else "[TODO]"
+		line.text = "%s  %s — %s" % [marker, str(objective.title), str(objective.description)]
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_objective_container.add_child(line)
+	var summary: Label = Label.new()
+	summary.text = "Campaign complete — The First Spark has been established." if progress.is_complete else "Progress: %d / %d objectives" % [int(progress.completed), int(progress.total)]
+	summary.add_theme_font_size_override("font_size", 15)
+	_objective_container.add_child(summary)
 
 func _refresh_timeline() -> void:
 	if _timeline_container == null:

@@ -1,7 +1,7 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.7.0  
-**Phase:** Events and timeline  
+**Project version:** 0.8.0  
+**Phase:** First Spark vertical slice  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
 **Engine:** Godot 4.7.2-stable  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The repository now includes deterministic settlement and population simulation, persistent structured NPC memories with deterministic retrieval and decay, a provider-neutral bounded dialogue contract with offline fallback, a data-driven knowledge library, nine inventions, authored historical events with player-driven causal choices, original-versus-altered timeline records and campaign persistence. This remains a development systems slice; manual playtesting is intentionally deferred until the 1.0.0 release candidate.
+The repository now includes deterministic settlement and population simulation, persistent structured NPC memories with deterministic retrieval and decay, a provider-neutral bounded dialogue contract with offline fallback, a data-driven knowledge library, nine inventions, authored historical events with player-driven causal choices, original-versus-altered timeline records, a derived First Spark objective chain, persisted production counts and campaign save/reload. This remains a development systems slice; manual playtesting is intentionally deferred until the 1.0.0 release candidate.
 
 ## Run locally
 
