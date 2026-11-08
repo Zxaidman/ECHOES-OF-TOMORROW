@@ -8,19 +8,30 @@ var _ready: bool = false
 func initialize() -> Dictionary:
 	var result: Dictionary = ContentCatalog.load_collection("res://content/facilities.json", "facilities")
 	if not result.ok: return result
+	var knowledge_result: Dictionary = ContentCatalog.load_collection("res://content/knowledge.json", "knowledge")
+	if not knowledge_result.ok: return knowledge_result
+	var knowledge_ids: Dictionary = {}
+	for knowledge: Dictionary in knowledge_result.items: knowledge_ids[str(knowledge.id)] = true
 	var resource_result: Dictionary = ContentCatalog.load_collection("res://content/resources.json", "resources")
 	if not resource_result.ok: return resource_result
 	var resource_ids: Dictionary = {}
 	for resource: Dictionary in resource_result.items: resource_ids[str(resource.id)] = true
 	var definitions: Dictionary = {}
+	var starting_count: int = 0
 	for item: Dictionary in result.items:
 		if not item.get("name", null) is String or not item.get("build_cost", null) is Dictionary or not item.get("required_knowledge", null) is Array or typeof(item.get("starting", null)) != TYPE_BOOL:
 			return {"ok": false, "error": "Invalid facility definition: %s" % str(item.get("id", ""))}
+		if bool(item.starting): starting_count += 1
+		for knowledge_id: Variant in item.required_knowledge:
+			if not knowledge_id is String or not knowledge_ids.has(str(knowledge_id)):
+				return {"ok": false, "error": "Unknown knowledge prerequisite in facility: %s" % str(item.get("id", ""))}
 		for resource_id: Variant in item.build_cost:
 			var amount: Variant = item.build_cost[resource_id]
 			if not resource_id is String or not resource_ids.has(str(resource_id)) or not _is_integral(amount) or int(amount) <= 0:
 				return {"ok": false, "error": "Invalid facility build cost: %s" % str(item.get("id", ""))}
 		definitions[str(item.id)] = item.duplicate(true)
+	if starting_count != 1:
+		return {"ok": false, "error": "Facility content must define exactly one starting facility"}
 	_definitions = definitions
 	_instances.clear()
 	for facility_id: String in _definitions:

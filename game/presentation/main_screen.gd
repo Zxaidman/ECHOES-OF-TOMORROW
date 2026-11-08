@@ -15,6 +15,9 @@ var _timeline_container: VBoxContainer
 var _knowledge_container: VBoxContainer
 var _facility_container: VBoxContainer
 var _invention_container: VBoxContainer
+var _dialogue_input: LineEdit
+var _dialogue_output: Label
+var _selected_npc_id: String = ""
 func _ready() -> void:
 	_simulation = SettlementSimulation.new()
 	_campaign_progress = FirstSparkCampaign.new()
@@ -55,6 +58,8 @@ func _build_screen() -> void:
 	_resource_grid = GridContainer.new()
 	_resource_grid.columns = 6
 	page.add_child(_resource_grid)
+	get_viewport().size_changed.connect(_update_resource_columns)
+	_update_resource_columns()
 	_status_label = Label.new()
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(_status_label)
@@ -71,8 +76,19 @@ func _build_screen() -> void:
 	var people: VBoxContainer = _make_tab(tabs, "People")
 	var people_result: Dictionary = ContentCatalog.load_collection("res://content/npcs.json", "npcs")
 	if people_result.ok:
-		for npc: Dictionary in people_result.items: people.add_child(_make_row(str(npc.name), str(npc.role)))
-	else: people.add_child(_make_row("Unavailable", str(people_result.error)))
+		for npc: Dictionary in people_result.items:
+			var npc_row: HBoxContainer = _make_row(str(npc.name), str(npc.role))
+			_add_button(npc_row, "Select", _on_select_npc.bind(str(npc.id)))
+			people.add_child(npc_row)
+	else:
+		people.add_child(_make_row("Unavailable", str(people_result.error)))
+	_dialogue_input = LineEdit.new()
+	_dialogue_input.placeholder_text = "Ask a question"
+	people.add_child(_dialogue_input)
+	_add_button(people, "Send", _on_send_dialogue)
+	_dialogue_output = Label.new()
+	_dialogue_output.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	people.add_child(_dialogue_output)
 	var history: VBoxContainer = _make_tab(tabs, "History")
 	_timeline_container = VBoxContainer.new()
 	history.add_child(_timeline_container)
@@ -279,8 +295,29 @@ func _on_load() -> void:
 	var result: Dictionary = restored.restore_save_state(int(loaded.data.simulation_minute), loaded.data.state)
 	if not result.ok: _set_status(str(result.error)); return
 	_simulation = restored
-	_set_status("Loaded.")
+	_set_status("Recovered previous save. Save again to replace the damaged file." if bool(loaded.get("recovered_from_backup", false)) else "Loaded.")
 	_refresh()
+func _update_resource_columns() -> void:
+	if _resource_grid == null:
+		return
+	_resource_grid.columns = 3 if get_viewport_rect().size.x < 900.0 else 6
+
+func _on_select_npc(npc_id: String) -> void:
+	_selected_npc_id = npc_id
+	var npc: Dictionary = _simulation.population.get_npc(npc_id)
+	_dialogue_output.text = str(npc.get("name", npc_id))
+
+func _on_send_dialogue() -> void:
+	if _selected_npc_id.is_empty():
+		_dialogue_output.text = "Select a person."
+		return
+	var result: Dictionary = _simulation.request_npc_dialogue(_selected_npc_id, _dialogue_input.text)
+	if not result.ok:
+		_dialogue_output.text = str(result.error)
+		return
+	_dialogue_output.text = str(result.proposal.dialogue_text)
+	_dialogue_input.clear()
+
 func _on_timeline_choice(event_id: String, choice_id: String) -> void:
 	var result: Dictionary = _simulation.resolve_historical_choice(event_id, choice_id)
 	_set_status("History updated." if result.ok else str(result.error))

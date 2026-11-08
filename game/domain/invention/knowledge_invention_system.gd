@@ -13,6 +13,12 @@ var _ready: bool = false
 func initialize() -> Dictionary:
 	var knowledge_result: Dictionary = ContentCatalog.load_collection("res://content/knowledge.json", "knowledge")
 	var invention_result: Dictionary = ContentCatalog.load_collection("res://content/inventions.json", "inventions")
+	var facility_result: Dictionary = ContentCatalog.load_collection("res://content/facilities.json", "facilities")
+	if not facility_result.ok:
+		return facility_result
+	var facility_ids: Dictionary = {}
+	for facility: Dictionary in facility_result.items:
+		facility_ids[str(facility.id)] = true
 	var resource_result: Dictionary = ContentCatalog.load_collection("res://content/resources.json", "resources")
 	if not knowledge_result.ok:
 		return knowledge_result
@@ -41,6 +47,8 @@ func initialize() -> Dictionary:
 		for field: String in ["name","category","description","validation_skill","facility_required"]:
 			if not item.get(field,"") is String or str(item.get(field,"")).is_empty():
 				return {"ok":false,"error":"Invalid invention field: %s" % field}
+		if not facility_ids.has(str(item.get("facility_required", ""))):
+			return {"ok":false,"error":"Unknown required facility: %s" % str(item.get("facility_required", ""))}
 		for field: String in ["knowledge_required","invention_prerequisites"]:
 			if not item.get(field,null) is Array:
 				return {"ok":false,"error":"Invalid invention prerequisites: %s" % str(item.get("id",""))}

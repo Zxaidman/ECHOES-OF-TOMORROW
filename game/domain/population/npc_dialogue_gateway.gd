@@ -50,8 +50,14 @@ func build_request(request_id: String, npc: Dictionary, player_input: String, sc
 
 func offline_response(request: Dictionary) -> Dictionary:
 	var persona: String = str(request.get("npc_persona_summary","resident"))
+	var memories: Array = request.get("relevant_memory_records", [])
 	var line: String = "%s: I can speak only from what I have seen or learned." % persona
-	return {"schema_version":SCHEMA_VERSION,"request_id":str(request.get("request_id","")),"npc_id":str(request.get("npc_id","")),"dialogue_text":line,"intent":"none","target_id":null,"referenced_memory_ids":[]}
+	var referenced_ids: Array[String] = []
+	if not memories.is_empty() and memories[0] is Dictionary:
+		var memory: Dictionary = memories[0]
+		line = "%s: I remember %s." % [persona, str(memory.get("summary", "what happened"))]
+		referenced_ids.append(str(memory.get("id", "")))
+	return {"schema_version":SCHEMA_VERSION,"request_id":str(request.get("request_id","")),"npc_id":str(request.get("npc_id","")),"dialogue_text":line,"intent":"none","target_id":null,"referenced_memory_ids":referenced_ids}
 
 func validate_response(request: Dictionary, response: Variant) -> Dictionary:
 	if not response is Dictionary:
