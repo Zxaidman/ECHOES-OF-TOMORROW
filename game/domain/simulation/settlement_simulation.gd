@@ -69,8 +69,18 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 	var resource_result: Dictionary = new_resources.restore(state["resources"])
 	if not resource_result["ok"]:
 		return resource_result
+	var normalized_events: Array = state["scheduled_events"].duplicate(true)
+	for event_value: Variant in normalized_events:
+		if not event_value is Dictionary:
+			return {"ok": false, "error": "Save contains an invalid scheduled event"}
+		var event_data: Dictionary = event_value
+		if str(event_data.get("type", "")) == RESOURCE_DELTA_EVENT:
+			var event_payload: Variant = event_data.get("payload", {})
+			if not event_payload is Dictionary or not event_payload.has("amount") or not _is_integral_number(event_payload["amount"]):
+				return {"ok": false, "error": "Save contains an invalid resource event amount"}
+			event_payload["amount"] = int(event_payload["amount"])
 	var new_events: ScheduledEventQueue = ScheduledEventQueue.new()
-	var event_result: Dictionary = new_events.restore(state["scheduled_events"], int(state["next_event_sequence_id"]))
+	var event_result: Dictionary = new_events.restore(normalized_events, int(state["next_event_sequence_id"]))
 	if not event_result["ok"]:
 		return event_result
 	for event: Dictionary in new_events.to_array():
