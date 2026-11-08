@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.3.0
+**Roadmap version:** 0.4.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -17,6 +17,18 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 | 0.8.0 | Vertical-slice content complete | End-to-end First Spark playable loop |
 | 0.9.0 | UX, balance and reliability | Acceptance tests, playtest fixes and performance validation |
 | 1.0.0 | First playable release | Release criteria, documentation and reproducible build |
+
+## 0.4.0 implementation status
+
+- [x] Five named NPCs with skills, age, health and needs
+- [x] Twenty background residents represented as an aggregate
+- [x] Deterministic hourly schedules and bounded goal selection
+- [x] Directional trust, cooperation and conflict relationships
+- [x] Daily population food upkeep connected to the resource ledger
+- [x] Population state included in campaign snapshots
+- [x] Population overview in the dashboard
+- [ ] Godot headless validation and Windows export
+- [ ] Manual Windows UX and save/reload playtest
 
 ## 0.3.0 implementation status
 

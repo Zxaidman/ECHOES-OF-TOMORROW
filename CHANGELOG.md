@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0] - Unreleased
+
+### Added
+- Population aggregate with five individually simulated named NPCs and twenty background residents.
+- Deterministic hourly needs, daily schedules, bounded goals and directional relationships.
+- Daily population food upkeep connected to the atomic resource ledger.
+- Population state included in campaign snapshots and restored with validation.
+- Population overview surfaced in the settlement dashboard.
+
+### Notes
+- Background residents remain aggregated; named NPCs receive individual needs and schedules.
+- NPC decisions remain deterministic and offline; no LLM mutates authoritative state.
+
+
 All notable project changes are documented here.
 
 ## [0.3.0] - Unreleased
