@@ -1,6 +1,6 @@
 # Data and Persistence Strategy
 
-**Document version:** 0.1.1  
+**Document version:** 0.3.0  
 **Status:** Approved baseline for the first vertical slice.
 
 ## 1. Three data categories
@@ -44,7 +44,9 @@ The snapshot contains:
 - game_version
 - content_version
 - campaign_id
-- simulation_clock
+- simulation_clock (integer minute)
+- resource balances
+- pending scheduled events and next event sequence ID
 - random_stream_states
 - world_state
 - settlement_state

@@ -1,7 +1,7 @@
 # Echoes of Tomorrow
 
-**Project version:** 0.2.0  
-**Phase:** Runtime foundation  
+**Project version:** 0.3.0  
+**Phase:** World and settlement simulation  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
 **Engine:** Godot 4.7.2-stable  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The repository now contains the first Godot runtime foundation: project configuration, initial settlement dashboard, JSON starter content, integer-minute clock, content loader, save snapshot foundation, headless tests and GitHub Actions workflows. This is a foundation build, not a complete playable simulation.
+The repository now contains a deterministic settlement simulation foundation: scheduled resource events, an atomic resource ledger, independent seeded random streams, campaign state restoration and interactive time controls. This is an early playable systems slice, not the complete vertical slice.
 
 ## Run locally
 
@@ -53,6 +53,7 @@ godot --headless --path . --script res://tests/run_tests.gd
 - Game Design Document: docs/design/GAME_DESIGN_DOCUMENT.md
 - Technical Architecture: docs/architecture/TECHNICAL_ARCHITECTURE.md
 - Simulation and Time Model: docs/architecture/SIMULATION_AND_TIME.md
+- CI and Release Policy: docs/production/CI_AND_RELEASES.md
 - Platform Compatibility: docs/architecture/PLATFORM_COMPATIBILITY.md
 - NPC Intelligence: docs/systems/NPC_INTELLIGENCE.md
 - Knowledge and Invention: docs/systems/KNOWLEDGE_AND_INVENTION.md

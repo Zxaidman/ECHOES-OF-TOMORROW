@@ -12,9 +12,11 @@ func save_snapshot(path: String, snapshot: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "Save requires an integer simulation_minute"}
 	if int(snapshot["simulation_minute"]) < 0:
 		return {"ok": false, "error": "simulation_minute cannot be negative"}
+	if not snapshot.get("state", {}) is Dictionary:
+		return {"ok": false, "error": "Save state must be a dictionary"}
 	var dto: Dictionary = {
 		"schema_version": SAVE_SCHEMA_VERSION,
-		"game_version": str(ProjectSettings.get_setting("application/config/version", "0.2.0")),
+		"game_version": str(ProjectSettings.get_setting("application/config/version", "0.3.0")),
 		"campaign_id": snapshot["campaign_id"],
 		"simulation_minute": snapshot["simulation_minute"],
 		"state": snapshot.get("state", {})
