@@ -70,7 +70,7 @@ func initialize() -> Dictionary:
 		if bool(_knowledge[item_id].get("known_at_start",false)):
 			_known[item_id] = true
 	for item_id: String in _inventions:
-		_progress[item_id] = {"status":"available","prototype_attempts":0,"validation_attempts":0,"last_failure":""}
+		_progress[item_id] = {"status":"available","prototype_attempts":0,"validation_attempts":0,"last_failure":"","production_runs":0}
 	_ready = true
 	return {"ok":true,"knowledge_count":_knowledge.size(),"invention_count":_inventions.size()}
 
@@ -153,7 +153,10 @@ func produce(item_id: String, ledger: ResourceLedger) -> Dictionary:
 	var result: Dictionary = ledger.apply_transaction(changes)
 	if not result.ok:
 		return result
-	return {"ok":true,"outputs":definition.production_output.duplicate(true),"amounts":result.amounts}
+	var progress: Dictionary = _progress[item_id]
+	progress.production_runs = int(progress.get("production_runs", 0)) + 1
+	_progress[item_id] = progress
+	return {"ok":true,"outputs":definition.production_output.duplicate(true),"amounts":result.amounts,"production_runs":int(progress.production_runs)}
 
 func get_knowledge_entries(population: PopulationSimulation, ledger: ResourceLedger) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -189,6 +192,15 @@ func get_invention_entries(population: PopulationSimulation, ledger: ResourceLed
 		result.append({"id":item_id,"name":str(definition.name),"category":str(definition.category),"description":str(definition.description),"status":visible_status,"can_prototype":str(progress.status) == "available" and missing_knowledge.is_empty() and missing_inventions.is_empty() and skills.ok and missing_resources.is_empty(),"can_test":str(progress.status) == "prototype_built","can_commission":str(progress.status) == "validated","can_produce":str(progress.status) == "production_ready","missing_knowledge":missing_knowledge,"missing_inventions":missing_inventions,"missing_skills":skills.get("error",""),"missing_resources":missing_resources,"last_failure":str(progress.last_failure),"production_cost":definition.production_cost.duplicate(true),"production_output":definition.production_output.duplicate(true)})
 	return result
 
+func is_knowledge_known(item_id: String) -> bool:
+	return _known.has(item_id)
+
+func get_invention_status(item_id: String) -> String:
+	return str(_progress.get(item_id, {}).get("status", "unknown"))
+
+func get_production_runs(item_id: String) -> int:
+	return int(_progress.get(item_id, {}).get("production_runs", 0))
+
 func create_save_state() -> Dictionary:
 	return {"known_knowledge":_known.duplicate(true),"progress":_progress.duplicate(true)}
 
@@ -206,7 +218,10 @@ func restore_save_state(state: Dictionary) -> Dictionary:
 		if not progress.has(item_id) or not progress[item_id] is Dictionary:
 			return {"ok":false,"error":"Missing invention save state: %s" % item_id}
 		var item: Dictionary = progress[item_id]
-		if not STATES.has(str(item.get("status",""))) or not _is_integral(item.get("prototype_attempts",null)) or not _is_integral(item.get("validation_attempts",null)) or int(item.prototype_attempts) < 0 or int(item.validation_attempts) < 0 or not item.get("last_failure","") is String:
+		# 0.7.0 saves predate production counters.
+		if not item.has("production_runs"):
+			item["production_runs"] = 0
+		if not STATES.has(str(item.get("status",""))) or not _is_integral(item.get("prototype_attempts",null)) or not _is_integral(item.get("validation_attempts",null)) or not _is_integral(item.get("production_runs",null)) or int(item.prototype_attempts) < 0 or int(item.validation_attempts) < 0 or int(item.production_runs) < 0 or int(item.production_runs) > 2147483647 or not item.get("last_failure","") is String:
 			return {"ok":false,"error":"Invalid invention save state: %s" % item_id}
 	_known = known
 	_progress = progress

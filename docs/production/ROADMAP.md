@@ -1,6 +1,6 @@
 # Production Roadmap
 
-**Roadmap version:** 0.7.0
+**Roadmap version:** 0.8.0
 
 Milestones are gates, not calendar promises. A milestone is complete only when its acceptance criteria are met.
 
@@ -84,9 +84,20 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 - [x] Windows development export verification
 - [ ] Manual playtest deferred to 1.0.0 release gate
 
+## 0.8.0 implementation status
+
+- [x] Derived campaign objective chain for the First Spark critical path
+- [x] Objective completion tied to authoritative historical, knowledge and invention state
+- [x] Successful production run counter persisted in invention save state
+- [x] Migration of 0.7.0 invention progress to zero production runs
+- [x] Campaign save and load controls with campaign identity and restore validation
+- [x] Automated end-to-end objective and save/restore tests
+- [ ] Headless validation and Windows development export
+- [ ] Manual playtest deferred to 1.0.0 release gate
+
 ## Next work queue
 
-1. Build the end-to-end First Spark vertical slice with a clear player objective and win/continue state.
+1. Expand the First Spark loop with facilities, construction and resource gathering so production depends on place and capacity, not only abstract recipes.
 2. Add facilities, construction and resource gathering to support repeatable production.
 3. Add skill development and time-based knowledge study.
 4. Expand historical event content, actor/location links and consequences across multiple settlements.
