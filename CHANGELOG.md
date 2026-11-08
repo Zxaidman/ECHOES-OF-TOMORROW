@@ -1,20 +1,3 @@
-## [0.9.0] - Development
-
-### Added
-- Data-driven farmstead, workshop, forge and watermill facilities.
-- Atomic construction with knowledge and resource prerequisites.
-- Facility persistence and 0.8.0 save migration.
-- Invention production requires its authored facility.
-- Focused Overview, People, History, Knowledge and Production tabs.
-
-### Changed
-- Removed the dashboard tagline and redundant objective descriptions.
-- Reduced repeated explanatory labels while preserving actionable failure reasons.
-
-### Notes
-- Worker assignment, throughput, maintenance and wear remain outside this milestone.
-- Manual desktop playtesting remains deferred until 1.0.0.
-
 ## [0.8.0] - Development
 
 ### Added

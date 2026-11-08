@@ -18,7 +18,7 @@ func initialize() -> Dictionary:
 			return {"ok": false, "error": "Invalid facility definition: %s" % str(item.get("id", ""))}
 		for resource_id: Variant in item.build_cost:
 			var amount: Variant = item.build_cost[resource_id]
-			if not resource_id is String or not resource_ids.has(str(resource_id)) or typeof(amount) != TYPE_INT or int(amount) <= 0:
+			if not resource_id is String or not resource_ids.has(str(resource_id)) or not _is_integral(amount) or int(amount) <= 0:
 				return {"ok": false, "error": "Invalid facility build cost: %s" % str(item.get("id", ""))}
 		definitions[str(item.id)] = item.duplicate(true)
 	_definitions = definitions
@@ -80,3 +80,6 @@ func restore_save_state(state: Dictionary) -> Dictionary:
 	return {"ok": true}
 func get_instances() -> Dictionary:
 	return _instances.duplicate(true)
+
+static func _is_integral(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or (typeof(value) == TYPE_FLOAT and value == floor(value))

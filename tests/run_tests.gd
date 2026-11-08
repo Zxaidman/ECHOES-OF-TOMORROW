@@ -12,7 +12,6 @@ const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_
 const NPCDialogueGateway = preload("res://game/domain/population/npc_dialogue_gateway.gd")
 const HistoricalTimeline = preload("res://game/domain/simulation/historical_timeline.gd")
 const FirstSparkCampaign = preload("res://game/domain/simulation/first_spark_campaign.gd")
-const FacilitySimulation = preload("res://game/domain/settlement/facility_simulation.gd")
 var _failures: int = 0
 var _assertions: int = 0
 
@@ -23,7 +22,6 @@ func _run() -> void:
 	_test_clock()
 	_test_content_catalog()
 	_test_resource_ledger()
-	_test_facility_simulation()
 	_test_event_queue()
 	_test_random_streams()
 	_test_simulation_determinism()
@@ -66,30 +64,6 @@ func _test_resource_ledger() -> void:
 	_expect(ledger.get_amount("food") == 15 and ledger.get_amount("wood") == 13, "rejected transaction is atomic")
 	_expect(not ledger.apply_transaction({"gold": 1})["ok"], "unknown resource rejected")
 	_expect(not ledger.apply_transaction({"food": 0.5})["ok"], "fractional resource delta rejected")
-
-func _test_facility_simulation() -> void:
-	var simulation: SettlementSimulation = SettlementSimulation.new()
-	_expect(simulation.facilities.has_facility("farmstead"), "new settlement starts with a farmstead")
-	_expect(not simulation.facilities.has_facility("workshop"), "new settlement does not start with a workshop")
-	var wood_before: int = simulation.resources.get_amount("wood")
-	var build: Dictionary = simulation.build_facility("workshop")
-	_expect(build.ok, "workshop builds with known mechanics and materials")
-	_expect(simulation.facilities.has_facility("workshop"), "constructed workshop becomes available")
-	_expect(simulation.resources.get_amount("wood") == wood_before - 12, "construction pays its wood cost")
-	_expect(not simulation.build_facility("workshop").ok, "duplicate facility construction is rejected")
-	var saved: Dictionary = simulation.create_save_state()
-	var restored: SettlementSimulation = SettlementSimulation.new()
-	_expect(restored.restore_save_state(simulation.clock.current_minute, saved).ok, "facility state restores with campaign")
-	_expect(restored.facilities.get_instances() == simulation.facilities.get_instances(), "facility instances round-trip exactly")
-	var legacy: Dictionary = saved.duplicate(true)
-	legacy.erase("facilities")
-	var migrated: SettlementSimulation = SettlementSimulation.new()
-	_expect(migrated.restore_save_state(simulation.clock.current_minute, legacy).ok, "0.8.0 save migrates with starting facilities")
-	_expect(migrated.facilities.has_facility("farmstead") and not migrated.facilities.has_facility("workshop"), "legacy migration does not invent constructed facilities")
-	var invalid: Dictionary = saved.duplicate(true)
-	invalid.facilities.instances.workshop.built_minute = -1
-	var rejected: SettlementSimulation = SettlementSimulation.new()
-	_expect(not rejected.restore_save_state(simulation.clock.current_minute, invalid).ok, "invalid facility save data is rejected")
 
 func _test_event_queue() -> void:
 	var queue: ScheduledEventQueue = ScheduledEventQueue.new()
@@ -164,7 +138,7 @@ func _test_first_spark_campaign() -> void:
 	_expect(simulation.knowledge.commission_production("improved_seed_selection").ok, "First Spark commissions improved seed production")
 	var before_production: Dictionary = campaign.get_progress(simulation)
 	_expect(before_production.completed == 4 and not before_production.is_complete, "First Spark remains incomplete until a production batch is made")
-	_expect(simulation.produce_invention("improved_seed_selection").ok, "First Spark produces its first improved batch")
+	_expect(simulation.knowledge.produce("improved_seed_selection", simulation.resources).ok, "First Spark produces its first improved batch")
 	var completed: Dictionary = campaign.get_progress(simulation)
 	_expect(completed.is_complete and completed.completed == completed.total, "First Spark completes only after the first production batch")
 	var saved_state: Dictionary = simulation.create_save_state()
@@ -343,11 +317,7 @@ func _test_knowledge_inventions() -> void:
 	_expect(system.commission_production("improved_seed_selection")["ok"], "validated invention can commission production")
 	var food_before: int = ledger.get_amount("food")
 	var tools_before: int = ledger.get_amount("tools")
-	var no_facility: Dictionary = system.produce("improved_seed_selection",ledger)
-	_expect(not no_facility.ok, "production requires its authored facility")
-	var facilities: FacilitySimulation = FacilitySimulation.new()
-	_expect(facilities.initialize().ok, "facility catalog initializes for production")
-	var produced: Dictionary = system.produce("improved_seed_selection",ledger,facilities)
+	var produced: Dictionary = system.produce("improved_seed_selection",ledger)
 	_expect(produced["ok"], "commissioned production recipe executes")
 	_expect(system.get_production_runs("improved_seed_selection") == 1, "successful production increments the persisted run counter")
 	_expect(ledger.get_amount("food") == food_before + 6 and ledger.get_amount("tools") == tools_before - 1, "production applies inputs and outputs atomically")

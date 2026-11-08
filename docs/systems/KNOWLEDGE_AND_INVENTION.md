@@ -10,8 +10,7 @@ The protagonist arrives with broad theoretical knowledge, but local capabilities
 2. Build a prototype by paying its explicit material cost.
 3. Test the prototype against a deterministic skill-based validation threshold.
 4. Commission repeatable production after validation.
-5. Build the required facility.
-6. Execute the production recipe through the atomic resource ledger.
+5. Execute the production recipe through the atomic resource ledger.
 
 ## Authored content
 
@@ -31,7 +30,7 @@ Improved bloomery furnace → reliable wrought-iron tools → controlled steel p
 ### Mechanical engineering
 Waterwheel power → geared mill → mechanical water pump.
 
-Each invention defines prototype inputs, minimum local skills, a validation skill threshold, a required facility, production inputs and production outputs.
+Each invention defines prototype inputs, minimum local skills, a validation skill threshold, production inputs and production outputs.
 
 ## Simulation authority
 
@@ -46,7 +45,7 @@ Known knowledge and per-invention lifecycle state are included in the campaign s
 ## Current limitations
 
 - Prototype validation is a deterministic skill threshold, not a physical simulation of material tolerances.
-- Production recipes alter abstract settlement resources but require a constructed facility. Worker assignment, throughput, wear, quality variation and maintenance remain outside this milestone.
+- Production recipes currently alter abstract settlement resources; facilities, throughput, wear, quality variation and maintenance are later systems.
 - Study actions are instantaneous and charge their authored resource cost; a time-based research queue is deferred.
 - The initial content uses the existing food, wood, stone, iron ore and tools resource vocabulary.
 - Manual desktop playtesting is deferred until the 1.0.0 release candidate.

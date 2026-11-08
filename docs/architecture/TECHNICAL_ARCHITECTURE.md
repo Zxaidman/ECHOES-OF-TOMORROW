@@ -49,7 +49,7 @@ Authoritative rules and state:
 - World and settlement state.
 - Population and NPC state.
 - Economy and inventories.
-- Facilities, construction and production.
+- Buildings and production.
 - Technology and invention progression.
 - Timeline events and divergence.
 - Diplomacy and relationships.
@@ -64,7 +64,7 @@ Save/load, content loading, event logs, deterministic random source, optional LL
 | Module | Owns | Must not own |
 |---|---|---|
 | World | Region, locations, travel and world events | UI widgets |
-| Settlement | Facilities, construction and work sites | LLM prompts |
+| Settlement | Buildings, work sites and local policies | LLM prompts |
 | Population | Residents, needs and aggregate demographics | Direct scene manipulation |
 | NPC | Character goals, relationships and memory | Unvalidated external state writes |
 | Economy | Resource balances, recipes and transactions | Dialogue generation |
@@ -148,7 +148,7 @@ A schema migration must be tested against representative prior fixtures.
 
 ## 9. Content pipeline
 
-Resources, facilities, recipes, inventions, events and character templates should be data-driven.
+Resources, buildings, recipes, inventions, events and character templates should be data-driven.
 
 Each definition must have:
 - Stable ID.
