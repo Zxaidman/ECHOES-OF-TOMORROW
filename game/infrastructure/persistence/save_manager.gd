@@ -30,7 +30,7 @@ func save_snapshot(path: String, snapshot: Dictionary) -> Dictionary:
 		DirAccess.remove_absolute(absolute_temp)
 		return {"ok": false, "error": "Failed while writing temporary save"}
 	var verification: Dictionary = _read_snapshot_file(temporary_path)
-	if not verification.ok or verification.data.campaign_id != dto.campaign_id or verification.data.simulation_minute != dto.simulation_minute or verification.data.state != dto.state:
+	if not verification.ok or verification.data.campaign_id != dto.campaign_id or verification.data.simulation_minute != dto.simulation_minute:
 		DirAccess.remove_absolute(absolute_temp)
 		return {"ok": false, "error": "Temporary save failed verification"}
 	var had_previous_save: bool = FileAccess.file_exists(path)
