@@ -34,7 +34,8 @@ func save_snapshot(path: String, snapshot: Dictionary) -> Dictionary:
 		DirAccess.remove_absolute(absolute_temp)
 		return {"ok": false, "error": "Temporary save failed verification"}
 	var had_previous_save: bool = FileAccess.file_exists(path)
-	if had_previous_save:
+	var previous_save: Dictionary = _read_snapshot_file(path) if had_previous_save else {"ok": false}
+	if had_previous_save and previous_save.ok:
 		if FileAccess.file_exists(backup_path):
 			var remove_backup_error: Error = DirAccess.remove_absolute(absolute_backup)
 			if remove_backup_error != OK:
@@ -44,12 +45,18 @@ func save_snapshot(path: String, snapshot: Dictionary) -> Dictionary:
 		if backup_error != OK:
 			DirAccess.remove_absolute(absolute_temp)
 			return {"ok": false, "error": "Unable to preserve previous save"}
+	elif had_previous_save:
+		# The active file is corrupt. Keep any verified backup untouched.
+		var remove_invalid_error: Error = DirAccess.remove_absolute(absolute_path)
+		if remove_invalid_error != OK:
+			DirAccess.remove_absolute(absolute_temp)
+			return {"ok": false, "error": "Unable to replace invalid active save"}
 	var replace_error: Error = DirAccess.rename_absolute(absolute_temp, absolute_path)
 	if replace_error != OK:
 		if had_previous_save:
 			DirAccess.rename_absolute(absolute_backup, absolute_path)
 		return {"ok": false, "error": "Unable to replace active save"}
-	return {"ok": true, "backup_created": had_previous_save}
+	return {"ok": true, "backup_created": FileAccess.file_exists(backup_path)}
 func load_snapshot(path: String) -> Dictionary:
 	var primary: Dictionary = _read_snapshot_file(path)
 	if primary.ok:
@@ -64,8 +71,12 @@ func _read_snapshot_file(path: String) -> Dictionary:
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {"ok": false, "error": "Unable to open save file"}
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	var parser: JSON = JSON.new()
+	var parse_error: Error = parser.parse(file.get_as_text())
 	file.close()
+	if parse_error != OK:
+		return {"ok": false, "error": "Save JSON is invalid: %s" % parser.get_error_message()}
+	var parsed: Variant = parser.data
 	if not parsed is Dictionary:
 		return {"ok": false, "error": "Save root must be a JSON object"}
 	var dto: Dictionary = parsed

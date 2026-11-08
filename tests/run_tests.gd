@@ -215,6 +215,10 @@ func _test_save_backup_recovery() -> void:
 	_expect(recovered.ok and recovered.get("recovered_from_backup", false), "corrupt active save recovers from backup")
 	if recovered.ok:
 		_expect(int(recovered.data.state.revision) == 1, "backup recovery returns the previous known-good campaign")
+	var repaired: Dictionary = manager.save_snapshot(path, {"campaign_id":"recovery-test","simulation_minute":30,"state":{"revision":3}})
+	_expect(repaired.ok, "saving after backup recovery repairs the active save")
+	var preserved: Dictionary = manager.load_snapshot(path + ".bak")
+	_expect(preserved.ok and int(preserved.data.state.revision) == 1, "repairing the active save preserves the previous known-good backup")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path + ".bak"))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_saves"))
