@@ -6,6 +6,8 @@ const ScheduledEventQueue = preload("res://game/domain/simulation/scheduled_even
 const ResourceLedger = preload("res://game/domain/settlement/resource_ledger.gd")
 const RandomStreams = preload("res://game/domain/simulation/random_streams.gd")
 const PopulationSimulation = preload("res://game/domain/population/population_simulation.gd")
+const KnowledgeInventionSystem = preload("res://game/domain/invention/knowledge_invention_system.gd")
+const ContentCatalog = preload("res://game/infrastructure/content/content_catalog.gd")
 const RESOURCE_DELTA_EVENT: String = "resource_delta"
 const POPULATION_HOURLY_EVENT: String = "population_hourly_tick"
 const MAX_MINUTE: int = 2147483647
@@ -14,15 +16,29 @@ var events: ScheduledEventQueue
 var resources: ResourceLedger
 var random_streams: RandomStreams
 var population: PopulationSimulation
+var knowledge: KnowledgeInventionSystem
 var event_log: Array[Dictionary] = []
 
 func _init(start_minute: int = 480, master_seed: int = 20261108) -> void:
 	clock = SimulationClock.new(clampi(start_minute, 0, MAX_MINUTE))
 	events = ScheduledEventQueue.new()
 	resources = ResourceLedger.new()
-	resources.initialize({"food": 120, "wood": 80, "stone": 45, "iron_ore": 12, "tools": 18, "medicine": 6})
+	var resource_content: Dictionary = ContentCatalog.load_collection("res://content/resources.json", "resources")
+	var starting_resources: Dictionary = {}
+	if resource_content.ok:
+		for definition: Dictionary in resource_content.items:
+			starting_resources[str(definition.id)] = int(definition.starting_amount)
+		var resource_init: Dictionary = resources.initialize(starting_resources)
+		if not resource_init.ok:
+			push_error("Resource content initialization failed: " + str(resource_init.error))
+	else:
+		push_error("Resource content could not be loaded: " + str(resource_content.error))
 	random_streams = RandomStreams.new(master_seed)
 	population = PopulationSimulation.new()
+	knowledge = KnowledgeInventionSystem.new()
+	var knowledge_result: Dictionary = knowledge.initialize()
+	if not knowledge_result.ok:
+		push_error("Knowledge content initialization failed: " + str(knowledge_result.error))
 	var next_hour: int = (int(start_minute / 60) + 1) * 60
 	var next_meal: int = int(start_minute / 1440) * 1440 + 540
 	if next_meal <= start_minute:
@@ -64,7 +80,7 @@ func advance_time(minutes: int) -> Dictionary:
 	return {"ok": true, "processed_events": processed_count, "current_minute": clock.current_minute}
 
 func create_save_state() -> Dictionary:
-	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state()}
+	return {"resources": resources.to_dictionary(), "scheduled_events": events.to_array(), "next_event_sequence_id": events.get_next_sequence_id(), "random_stream_states": random_streams.to_dictionary(), "population": population.create_save_state(), "knowledge": knowledge.create_save_state()}
 
 func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary:
 	if simulation_minute < 0 or simulation_minute > MAX_MINUTE or not state.has("resources") or not state["resources"] is Dictionary:
@@ -77,6 +93,8 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 		return {"ok": false, "error": "Save is missing random stream states"}
 	if not state.has("population") or not state["population"] is Dictionary:
 		return {"ok": false, "error": "Save is missing population state"}
+	if state.has("knowledge") and not state["knowledge"] is Dictionary:
+		return {"ok": false, "error": "Save contains invalid knowledge state"}
 	var new_resources: ResourceLedger = ResourceLedger.new()
 	var resource_result: Dictionary = new_resources.restore(state["resources"])
 	if not resource_result["ok"]:
@@ -105,6 +123,15 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 	var population_result: Dictionary = new_population.restore_save_state(state["population"])
 	if not population_result["ok"]:
 		return population_result
+	var new_knowledge: KnowledgeInventionSystem = KnowledgeInventionSystem.new()
+	var knowledge_init: Dictionary = new_knowledge.initialize()
+	if not knowledge_init.ok:
+		return knowledge_init
+	if state.has("knowledge"):
+		var knowledge_restore: Dictionary = new_knowledge.restore_save_state(state["knowledge"])
+		if not knowledge_restore.ok:
+			return knowledge_restore
+	# 0.4.0 saves predate knowledge progression; initialize the new campaign defaults.
 	var new_random_streams: RandomStreams = RandomStreams.new()
 	var rng_result: Dictionary = new_random_streams.restore(state["random_stream_states"])
 	if not rng_result["ok"]:
@@ -113,6 +140,7 @@ func restore_save_state(simulation_minute: int, state: Dictionary) -> Dictionary
 	events = new_events
 	random_streams = new_random_streams
 	population = new_population
+	knowledge = new_knowledge
 	clock = SimulationClock.new(simulation_minute)
 	event_log.clear()
 	return {"ok": true}

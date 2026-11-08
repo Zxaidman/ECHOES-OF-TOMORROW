@@ -1,85 +1,51 @@
 # Knowledge and Invention System
 
-**Document version:** 0.1.0
+**Document version:** 0.5.0
 
-## 1. Core principle
+## Player-facing loop
 
-The protagonist's knowledge unlocks possible approaches; it does not conjure materials, skilled labor, tools or functioning products.
+The protagonist arrives with broad theoretical knowledge, but local capabilities must be developed. Knowledge unlocks possible approaches; it does not create materials, skilled labor, facilities or functioning products.
 
-The system should make the gap between knowing and doing visible and playable.
+1. Study an advanced method after its knowledge prerequisites and skill requirements are met.
+2. Build a prototype by paying its explicit material cost.
+3. Test the prototype against a deterministic skill-based validation threshold.
+4. Commission repeatable production after validation.
+5. Execute the production recipe through the atomic resource ledger.
 
-## 2. Invention definition
+## Authored content
 
-Each invention definition should include:
-- Stable ID and schema version.
-- Name, description and category.
-- Knowledge prerequisite.
-- Required materials and quantities.
-- Required facilities and tool capabilities.
-- Required skills and minimum proficiency.
-- Production process or recipe.
-- Prototype criteria.
-- Validation tests and reliability thresholds.
-- Industrialization requirements.
-- Adoption constraints.
-- Risks, by-products and maintenance.
-- Unlocks and downstream dependencies.
+- `content/knowledge.json`: 12 entries, including three foundational concepts known at campaign start and nine advanced study topics.
+- `content/inventions.json`: nine inventions across three dependency chains.
+- Definitions use stable IDs, prerequisite arrays, integer resource quantities and skill requirements.
+- Knowledge and invention dependency graphs are checked for unknown references and cycles during initialization.
 
-Quantities must use explicit units. Do not mix abstract points with physical quantities without clear conversion rules.
+## First invention chains
 
-## 3. Seven implementation stages
+### Agriculture
+Selective seed cultivation → planned crop rotation → managed irrigation channels.
 
-1. Knowledge: protagonist can explain the principle and relevant design.
-2. Resources: required inputs are obtainable.
-3. Manufacturing: tools, facilities and skills are sufficient.
-4. Prototype: a test article can be made.
-5. Validation: it meets defined performance and safety criteria.
-6. Industrialization: repeatable production and quality control are possible.
-7. Adoption: institutions, users and maintenance practices support use.
+### Metallurgy
+Improved bloomery furnace → reliable wrought-iron tools → controlled steel process.
 
-Stage progress must be based on requirements and evidence, not a single generic research meter.
+### Mechanical engineering
+Waterwheel power → geared mill → mechanical water pump.
 
-## 4. First-slice candidates
+Each invention defines prototype inputs, minimum local skills, a validation skill threshold, production inputs and production outputs.
 
-### Improved waterwheel
-Gameplay impact: mechanical power for milling or workshop processes.
-Dependencies to validate: suitable stream/flow, timber, stone or masonry, joinery, bearings/axle, local craft skill and maintenance.
+## Simulation authority
 
-### Improved irrigation
-Gameplay impact: improved water distribution and crop resilience.
-Dependencies: terrain survey, water source, channels, labor coordination, land access and maintenance agreements.
+All actions are deterministic. Skills are checked against the best available named-NPC skill. Resource costs and production inputs/outputs are applied as atomic ledger transactions. UI code only issues commands and renders returned state.
 
-### Sanitation practices
-Gameplay impact: lower disease pressure and improved settlement health.
-Dependencies: water-source protection, waste separation, drainage, public cooperation and sustained maintenance.
+Validation failures preserve the prototype and record the reason and attempt count. A player can retry after conditions improve. Production cannot be commissioned before validation.
 
-The game should avoid implying that a single modern idea instantly solves complex historical problems.
+## Persistence
 
-## 5. Failure and iteration
+Known knowledge and per-invention lifecycle state are included in the campaign snapshot. Restore validates IDs, state names and attempt counters before applying state. A content-set mismatch is rejected rather than silently dropping player progress. Saves created by 0.4.0 are migrated by initializing the new knowledge catalog at its starting state; no prior invention progress existed in those saves.
 
-Prototype attempts may fail for understandable reasons:
-- Material quality.
-- Inadequate precision.
-- Skill gap.
-- Design assumptions.
-- Environmental constraints.
-- Poor maintenance.
+## Current limitations
 
-Failures should provide actionable information and preserve reusable learning where appropriate.
-
-## 6. UI requirements
-
-The invention screen must answer:
-- What does this invention improve?
-- What does the protagonist know?
-- Which stage is active?
-- What prerequisites are satisfied?
-- What is missing?
-- Who can contribute?
-- What is the cost and risk?
-- What will be unlocked?
-- Why did the last attempt fail?
-
-## 7. Validation
-
-Use content validation to detect missing IDs, circular prerequisites, impossible recipes, missing units, invalid quantities and unreachable stage graphs.
+- Prototype validation is a deterministic skill threshold, not a physical simulation of material tolerances.
+- Production recipes currently alter abstract settlement resources; facilities, throughput, wear, quality variation and maintenance are later systems.
+- Study actions are instantaneous and charge their authored resource cost; a time-based research queue is deferred.
+- The initial content uses the existing food, wood, stone, iron ore and tools resource vocabulary.
+- Manual desktop playtesting is deferred until the 1.0.0 release candidate.

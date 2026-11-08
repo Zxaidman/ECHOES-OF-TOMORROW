@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "inventions": [
+    {
+      "id": "improved_seed_selection",
+      "name": "Improved seed selection",
+      "category": "Agriculture",
+      "description": "Select and preserve seed from stronger, more reliable crops.",
+      "knowledge_required": [
+        "crop_selection"
+      ],
+      "invention_prerequisites": [],
+      "prototype_cost": {
+        "food": 4,
+        "tools": 1
+      },
+      "skill_requirements": {
+        "farming": 25
+      },
+      "validation_skill": "farming",
+      "validation_min": 45,
+      "production_cost": {
+        "tools": 1
+      },
+      "production_output": {
+        "food": 6
+      }
+    },
+    {
+      "id": "crop_rotation",
+      "name": "Planned crop rotation",
+      "category": "Agriculture",
+      "description": "Use planned crop rotation to protect soil fertility and stabilize harvests.",
+      "knowledge_required": [
+        "soil_rotation"
+      ],
+      "invention_prerequisites": [
+        "improved_seed_selection"
+      ],
+      "prototype_cost": {
+        "food": 4,
+        "tools": 1
+      },
+      "skill_requirements": {
+        "farming": 35
+      },
+      "validation_skill": "farming",
+      "validation_min": 55,
+      "production_cost": {
+        "tools": 1
+      },
+      "production_output": {
+        "food": 8
+      }
+    },
+    {
+      "id": "irrigation_channels",
+      "name": "Managed irrigation channels",
+      "category": "Agriculture",
+      "description": "Build maintained channels to direct water to fields when crops need it.",
+      "knowledge_required": [
+        "water_management"
+      ],
+      "invention_prerequisites": [
+        "crop_rotation"
+      ],
+      "prototype_cost": {
+        "wood": 8,
+        "stone": 6,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "farming": 30,
+        "crafting": 25
+      },
+      "validation_skill": "farming",
+      "validation_min": 60,
+      "production_cost": {
+        "wood": 1,
+        "tools": 1
+      },
+      "production_output": {
+        "food": 12
+      }
+    },
+    {
+      "id": "bloomery_furnace",
+      "name": "Improved bloomery furnace",
+      "category": "Metallurgy",
+      "description": "Construct a controllable bloomery that produces more consistent workable iron.",
+      "knowledge_required": [
+        "bloomery_operation"
+      ],
+      "invention_prerequisites": [],
+      "prototype_cost": {
+        "stone": 8,
+        "wood": 10,
+        "iron_ore": 2,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "crafting": 35
+      },
+      "validation_skill": "crafting",
+      "validation_min": 50,
+      "production_cost": {
+        "wood": 2,
+        "iron_ore": 1
+      },
+      "production_output": {
+        "tools": 2
+      }
+    },
+    {
+      "id": "wrought_iron_tools",
+      "name": "Reliable wrought-iron tools",
+      "category": "Metallurgy",
+      "description": "Standardize forging methods for durable, repairable iron tools.",
+      "knowledge_required": [
+        "iron_working"
+      ],
+      "invention_prerequisites": [
+        "bloomery_furnace"
+      ],
+      "prototype_cost": {
+        "iron_ore": 4,
+        "wood": 4,
+        "tools": 1
+      },
+      "skill_requirements": {
+        "crafting": 45
+      },
+      "validation_skill": "crafting",
+      "validation_min": 60,
+      "production_cost": {
+        "iron_ore": 2,
+        "wood": 2
+      },
+      "production_output": {
+        "tools": 3
+      }
+    },
+    {
+      "id": "controlled_steel",
+      "name": "Controlled steel process",
+      "category": "Metallurgy",
+      "description": "Improve carbon and heat control to produce harder, more consistent steel.",
+      "knowledge_required": [
+        "carbon_control"
+      ],
+      "invention_prerequisites": [
+        "wrought_iron_tools"
+      ],
+      "prototype_cost": {
+        "iron_ore": 5,
+        "wood": 8,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "crafting": 60
+      },
+      "validation_skill": "crafting",
+      "validation_min": 70,
+      "production_cost": {
+        "iron_ore": 3,
+        "wood": 3
+      },
+      "production_output": {
+        "tools": 5
+      }
+    },
+    {
+      "id": "waterwheel",
+      "name": "Waterwheel power",
+      "category": "Mechanical engineering",
+      "description": "Harness a stream to deliver dependable rotational power to a workshop.",
+      "knowledge_required": [
+        "hydraulics"
+      ],
+      "invention_prerequisites": [],
+      "prototype_cost": {
+        "wood": 10,
+        "stone": 8,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "crafting": 35,
+        "farming": 20
+      },
+      "validation_skill": "crafting",
+      "validation_min": 50,
+      "production_cost": {
+        "wood": 1,
+        "tools": 1
+      },
+      "production_output": {
+        "food": 4
+      }
+    },
+    {
+      "id": "gear_mill",
+      "name": "Geared mill",
+      "category": "Mechanical engineering",
+      "description": "Use a gear train to adapt waterwheel speed and torque for useful work.",
+      "knowledge_required": [
+        "gear_trains"
+      ],
+      "invention_prerequisites": [
+        "waterwheel"
+      ],
+      "prototype_cost": {
+        "wood": 8,
+        "iron_ore": 2,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "crafting": 50
+      },
+      "validation_skill": "crafting",
+      "validation_min": 65,
+      "production_cost": {
+        "iron_ore": 1,
+        "wood": 1
+      },
+      "production_output": {
+        "tools": 1
+      }
+    },
+    {
+      "id": "mechanical_pump",
+      "name": "Mechanical water pump",
+      "category": "Mechanical engineering",
+      "description": "Convert rotational power into repeatable water lifting for fields and workshops.",
+      "knowledge_required": [
+        "pump_design"
+      ],
+      "invention_prerequisites": [
+        "gear_mill"
+      ],
+      "prototype_cost": {
+        "wood": 10,
+        "iron_ore": 3,
+        "tools": 2
+      },
+      "skill_requirements": {
+        "crafting": 60,
+        "farming": 25
+      },
+      "validation_skill": "crafting",
+      "validation_min": 72,
+      "production_cost": {
+        "wood": 2,
+        "iron_ore": 1
+      },
+      "production_output": {
+        "food": 8
+      }
+    }
+  ]
+}
