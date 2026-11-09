@@ -1,7 +1,7 @@
 # Echoes of Tomorrow
 
-**Project version:** 1.0.0-rc.1  
-**Phase:** First playable release candidate  
+**Project version:** 1.0.0-rc.2  
+**Phase:** World-first visual overhaul / release candidate  
 **Genre:** Civilization reconstruction / historical strategy simulation  
 **Initial target:** Windows PC  
 **Engine:** Godot 4.7.2-stable  
@@ -22,7 +22,7 @@ Echoes of Tomorrow is a strategy simulation about a person from a collapsed tech
 
 ## Current status
 
-The 1.0.0 release candidate is a Windows-first, offline-capable First Spark campaign. It includes deterministic settlement and population simulation, five named NPCs with memory-aware offline conversations, historical choices, knowledge and invention progression, four facilities, facility-gated production, and campaign save/recovery. Trade, diplomacy, a regional map, multiple settlements, worker assignment and live cloud AI are not part of this release candidate. Manual acceptance testing is required before stable 1.0.0.
+The 1.0.0-rc.2 candidate is a Windows-first, offline-capable First Spark campaign. Its default screen is now a world-first isometric settlement with camera pan/zoom, selectable buildings and villagers, and contextual panels. The first outlined sprite pass uses selected Kenney Sketch Town / Sketch Town Expansion CC0 assets for terrain, paths, river, crops, buildings, trees and props. The deterministic settlement and population simulation, five named NPCs, offline conversations, historical choices, knowledge/invention progression, facility-gated production and save recovery remain in place. NPC art is still a placeholder pass; the settlement art requires desktop visual playtesting before stable 1.0.0. Trade, diplomacy, a regional map, multiple settlements, worker assignment and live cloud AI remain outside this candidate.
 
 ## Run locally
 
@@ -50,7 +50,9 @@ godot --headless --path . --script res://tests/run_tests.gd
 
 ## Documentation
 
-- 1.0.0 release-candidate playtest: docs/production/PLAYTEST_1.0.0.md
+- 1.0.0-rc.2 playtest: docs/production/PLAYTEST_1.0.0.md
+- Visual direction and rendering plan: docs/design/VISUAL_DIRECTION_1.0.0_RC2.md
+- Integrated asset sources and licence: assets/kenney/sketch-town/README.md
 
 - Game Design Document: docs/design/GAME_DESIGN_DOCUMENT.md
 - Technical Architecture: docs/architecture/TECHNICAL_ARCHITECTURE.md

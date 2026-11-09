@@ -1,21 +1,21 @@
-## [1.0.0-rc.1] - Release Candidate
+## [1.0.0-rc.2] - World-first visual overhaul
 
 ### Added
-- Memory-aware offline NPC conversations through the validated dialogue gateway.
-- Previous-known-good save recovery when the active save is missing or corrupt.
-- Responsive resource layout for narrow and desktop windows.
-- Strict facility knowledge references and invention-to-facility validation.
-- Manual 1.0.0 acceptance checklist.
+- Isometric settlement world as the default screen, with pan/zoom, selectable buildings and villagers, and contextual inspection.
+- Twelve Kenney Sketch Town / Sketch Town Expansion sprites under CC0 1.0 for terrain, paths, river, crop furrows, buildings, roofs, trees and settlement props.
+- Back-to-front isometric terrain rendering, selected-object contours and day/night tint.
+- Asset source and licence record under assets/kenney/sketch-town/README.md.
 
-### Reliability
-- Temporary save verification checks the complete DTO before replacing the active save.
-- Backup recovery is reported explicitly and never silently overwrites the damaged active file.
-- Regression coverage for backup recovery and NPC-scoped conversations.
+### Changed
+- Replaced the dashboard-first presentation with a world-first settlement interface and compact bottom navigation.
+- Updated the visual direction to match the integrated outlined, shaded low-poly sprite language.
 
-### Release boundary
-- Windows desktop is the only release target in this candidate.
-- Android and Web, live cloud AI, trade, diplomacy, regional maps and multiple settlements are excluded.
-- Stable 1.0.0 remains gated on the manual playtest checklist.
+### Verification
+- Headless Godot import and project parsing passed.
+- Headless simulation tests passed.
+- Windows x86_64 export passed.
+- Desktop visual acceptance remains required for sprite alignment, depth ordering, selection hit areas and zoom readability.
+- NPC figures remain procedural placeholders pending a compatible character art pass.
 
 ## [0.9.0] - Development
 
