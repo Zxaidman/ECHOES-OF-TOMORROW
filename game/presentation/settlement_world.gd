@@ -8,6 +8,20 @@ signal entity_selected(entity_type: String, entity_id: String)
 const TILE_HALF_WIDTH: float = 48.0
 const TILE_HALF_HEIGHT: float = 24.0
 const INK: Color = Color("#342a25")
+const TILE_SCALE: float = 0.375
+const TILE_SIZE: Vector2 = Vector2(96.0, 132.0)
+const TEX_GRASS: Texture2D = preload("res://assets/kenney/sketch-town/grass_center_S.png")
+const TEX_PATH: Texture2D = preload("res://assets/kenney/sketch-town/grass_path_S.png")
+const TEX_RIVER: Texture2D = preload("res://assets/kenney/sketch-town/grass_river_S.png")
+const TEX_TREE: Texture2D = preload("res://assets/kenney/sketch-town/tree_single_S.png")
+const TEX_TREE_CLUSTER: Texture2D = preload("res://assets/kenney/sketch-town/tree_multiple_S.png")
+const TEX_BUILDING: Texture2D = preload("res://assets/kenney/sketch-town/building_doorWindowsBeige_S.png")
+const TEX_ROOF: Texture2D = preload("res://assets/kenney/sketch-town/roof_gableBeige_S.png")
+const TEX_BRIDGE: Texture2D = preload("res://assets/kenney/sketch-town/bridge_S.png")
+const TEX_CROPS: Texture2D = preload("res://assets/kenney/sketch-town/furrow_cropWheat_S.png")
+const TEX_WELL: Texture2D = preload("res://assets/kenney/sketch-town/well_S.png")
+const TEX_PINE: Texture2D = preload("res://assets/kenney/sketch-town/tree_pineLarge_S.png")
+const TEX_FENCE: Texture2D = preload("res://assets/kenney/sketch-town/fence_wood_S.png")
 const GRASS: Array[Color] = [
 	Color("#71885a"), Color("#788e5e"), Color("#6d8355"),
 	Color("#819363"), Color("#74895a")
@@ -75,9 +89,6 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, viewport_size), Color("#a9b49a"))
 	draw_set_transform(_camera_offset, 0.0, Vector2(_zoom, _zoom))
 	_draw_terrain()
-	_draw_water()
-	_draw_paths()
-	_draw_farm_plots()
 	_draw_trees()
 	_draw_farmstead()
 	_draw_facilities()
@@ -87,59 +98,41 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_terrain() -> void:
-	for row: int in range(12):
-		for column: int in range(15):
+	# Isometric cubes are drawn back-to-front by diagonal depth so their side faces
+	# overlap consistently instead of producing a flat, checkerboard map.
+	for depth: int in range(26):
+		for row: int in range(12):
+			var column: int = depth - row
+			if column < 0 or column >= 15:
+				continue
 			var center := Vector2(
 				float(column - row - 7) * TILE_HALF_WIDTH,
 				float(column + row - 18) * TILE_HALF_HEIGHT
 			)
-			var variation: int = posmod(column * 7 + row * 11, GRASS.size())
-			var points := _diamond(center, TILE_HALF_WIDTH, TILE_HALF_HEIGHT)
-			draw_colored_polygon(points, GRASS[variation])
-			draw_polyline(_closed(points), Color("#526b49"), 1.2, true)
-			if posmod(column * 13 + row * 5, 9) == 0:
-				draw_circle(center + Vector2(-9.0, -3.0), 1.8, Color("#9aaa70"))
-				draw_circle(center + Vector2(13.0, 5.0), 1.2, Color("#a8ad78"))
+			var texture: Texture2D = TEX_GRASS
+			if row == 6 and column >= 1 and column <= 13:
+				texture = TEX_PATH
+			elif row == 5 and column >= 2 and column <= 5:
+				texture = TEX_PATH
+			elif row == 3 and column >= 9 and column <= 14:
+				texture = TEX_RIVER
+			elif row == 4 and column >= 11 and column <= 14:
+				texture = TEX_RIVER
+			elif row == 8 and column >= 2 and column <= 4:
+				texture = TEX_CROPS
+			elif row == 9 and column >= 2 and column <= 4:
+				texture = TEX_CROPS
+			draw_texture_rect(texture, Rect2(center - TILE_SIZE * 0.5, TILE_SIZE), false)
 
 func _draw_water() -> void:
-	var river := PackedVector2Array([
-		Vector2(350.0, -310.0), Vector2(300.0, -190.0),
-		Vector2(335.0, -55.0), Vector2(285.0, 85.0),
-		Vector2(340.0, 230.0), Vector2(305.0, 340.0)
-	])
-	draw_polyline(river, Color("#425b50"), 43.0, true)
-	draw_polyline(river, Color("#789e9b"), 35.0, true)
-	draw_polyline(river, Color("#a8c1ad"), 2.0, true)
-	for index: int in range(5):
-		var point := Vector2(315.0 + sin(_elapsed * 0.7 + float(index)) * 10.0, -190.0 + float(index) * 100.0)
-		draw_line(point, point + Vector2(15.0, -3.0), Color("#d0d0a4"), 1.5)
+	# Water is authored directly into the ground tiles; this function remains
+	# intentionally empty so the renderer does not add a mismatched vector river.
 
 func _draw_paths() -> void:
-	var path := PackedVector2Array([
-		Vector2(-365.0, 180.0), Vector2(-230.0, 110.0),
-		Vector2(-95.0, 65.0), Vector2(40.0, 110.0),
-		Vector2(180.0, 60.0), Vector2(290.0, -20.0)
-	])
-	draw_polyline(path, Color("#66513c"), 31.0, true)
-	draw_polyline(path, Color("#b59a70"), 25.0, true)
-	draw_polyline(path, Color("#d0b78d"), 1.5, true)
-	var branch := PackedVector2Array([Vector2(-95.0, 65.0), Vector2(-75.0, -35.0), Vector2(-95.0, -135.0)])
-	draw_polyline(branch, Color("#66513c"), 25.0, true)
-	draw_polyline(branch, Color("#b59a70"), 19.0, true)
+	# Paths are authored into the ground tile selection in _draw_terrain().
 
 func _draw_farm_plots() -> void:
-	for plot_index: int in range(3):
-		var center := Vector2(-350.0 + float(plot_index) * 4.0, 250.0 + float(plot_index) * 20.0)
-		var points := _diamond(center, 68.0, 27.0)
-		draw_colored_polygon(points, Color("#755d42"))
-		draw_polyline(_closed(points), Color("#4a3b2e"), 2.0, true)
-		for row: int in range(3):
-			for plant: int in range(6):
-				var x: float = center.x - 40.0 + float(plant) * 16.0
-				var y: float = center.y - 10.0 + float(row) * 9.0
-				var growth: float = 5.0 + 2.0 * sin(_elapsed * 1.8 + float(plant + row))
-				draw_line(Vector2(x, y), Vector2(x - 2.0, y - growth), Color("#405a38"), 2.0)
-				draw_circle(Vector2(x - 3.0, y - growth), 2.4, Color("#a5a85e"))
+	# Crop furrows are part of the terrain tile pass.
 
 func _draw_trees() -> void:
 	var positions: Array[Vector2] = [
@@ -150,111 +143,56 @@ func _draw_trees() -> void:
 		Vector2(210.0, 260.0), Vector2(-460.0, 270.0)
 	]
 	for index: int in range(positions.size()):
-		_draw_tree(positions[index], 0.82 + float(posmod(index * 7, 5)) * 0.09, index)
+		var texture: Texture2D = TEX_TREE_CLUSTER if posmod(index, 3) == 0 else TEX_TREE
+		if posmod(index, 5) == 0:
+			texture = TEX_PINE
+		_draw_ground_sprite(texture, positions[index], TILE_SCALE, Color.WHITE)
 
 func _draw_tree(position: Vector2, scale: float, seed: int) -> void:
-	var sway: float = sin(_elapsed * 1.1 + float(seed)) * 2.0
-	draw_ellipse(position + Vector2(0.0, 7.0), Vector2(21.0, 10.0) * scale, Color("#536447"))
-	draw_rect(Rect2(position + Vector2(-5.0, -43.0) * scale, Vector2(10.0, 48.0) * scale), Color("#72513b"))
-	draw_line(position + Vector2(0.0, -38.0) * scale, position + Vector2(0.0, -5.0) * scale, Color("#a17b54"), 2.0)
-	var crown := position + Vector2(sway, -60.0 * scale)
-	draw_circle(crown, 29.0 * scale, Color("#3e5c3f"))
-	draw_circle(crown + Vector2(-15.0, -9.0) * scale, 20.0 * scale, Color("#59784a"))
-	draw_circle(crown + Vector2(13.0, -14.0) * scale, 19.0 * scale, Color("#718a51"))
-	draw_arc(crown + Vector2(-2.0, -2.0), 27.0 * scale, 3.4, 5.3, 16, Color("#a0a76a"), 1.4)
+	var texture: Texture2D = TEX_TREE_CLUSTER if seed % 2 == 0 else TEX_TREE
+	_draw_ground_sprite(texture, position, scale * TILE_SCALE, Color.WHITE)
 
 func _draw_farmstead() -> void:
 	var center := Vector2(-82.0, -62.0)
-	draw_ellipse(center + Vector2(0.0, 45.0), Vector2(92.0, 31.0), Color("#4f6043"))
-	var base := PackedVector2Array([
-		center + Vector2(-62.0, -35.0), center + Vector2(0.0, -67.0),
-		center + Vector2(65.0, -34.0), center + Vector2(65.0, 35.0),
-		center + Vector2(0.0, 67.0), center + Vector2(-62.0, 35.0)
-	])
-	draw_colored_polygon(base, Color("#c5a77d"))
-	draw_polyline(_closed(base), INK, 3.0, true)
-	var front := PackedVector2Array([
-		center + Vector2(-62.0, -35.0), center + Vector2(0.0, -4.0),
-		center + Vector2(0.0, 67.0), center + Vector2(-62.0, 35.0)
-	])
-	draw_colored_polygon(front, Color("#a9845f"))
-	draw_polyline(_closed(front), INK, 2.0, true)
-	var side := PackedVector2Array([
-		center + Vector2(0.0, -4.0), center + Vector2(65.0, -34.0),
-		center + Vector2(65.0, 35.0), center + Vector2(0.0, 67.0)
-	])
-	draw_colored_polygon(side, Color("#d2b58a"))
-	draw_polyline(_closed(side), INK, 2.0, true)
-	var roof_left := PackedVector2Array([
-		center + Vector2(-76.0, -38.0), center + Vector2(-7.0, -105.0),
-		center + Vector2(5.0, -98.0), center + Vector2(-62.0, -24.0)
-	])
-	var roof_right := PackedVector2Array([
-		center + Vector2(-7.0, -105.0), center + Vector2(78.0, -43.0),
-		center + Vector2(68.0, -29.0), center + Vector2(5.0, -98.0)
-	])
-	draw_colored_polygon(roof_left, Color("#68463a"))
-	draw_colored_polygon(roof_right, Color("#8c5943"))
-	draw_polyline(_closed(roof_left), INK, 3.0, true)
-	draw_polyline(_closed(roof_right), INK, 3.0, true)
-	draw_line(center + Vector2(-49.0, -45.0), center + Vector2(-2.0, -91.0), Color("#b47b56"), 2.0)
-	draw_line(center + Vector2(10.0, -91.0), center + Vector2(62.0, -47.0), Color("#bd8056"), 2.0)
-	draw_rect(Rect2(center + Vector2(-16.0, 20.0), Vector2(26.0, 47.0)), Color("#563d31"))
-	draw_rect(Rect2(center + Vector2(-52.0, -8.0), Vector2(19.0, 18.0)), Color("#5e7770"))
-	draw_rect(Rect2(center + Vector2(25.0, -10.0), Vector2(20.0, 18.0)), Color("#5e7770"))
-	draw_line(center + Vector2(-52.0, 0.0), center + Vector2(-33.0, 0.0), Color("#e2c99c"), 2.0)
-	draw_line(center + Vector2(-42.0, -8.0), center + Vector2(-42.0, 10.0), Color("#e2c99c"), 2.0)
+	_draw_building_sprite(center, Color.WHITE)
 	if _selected_type == "building" and _selected_id == "farmstead":
-		var highlight := PackedVector2Array([
-			center + Vector2(-87.0, -40.0), center + Vector2(-5.0, -121.0),
-			center + Vector2(89.0, -44.0), center + Vector2(77.0, 43.0),
-			center + Vector2(-3.0, 82.0), center + Vector2(-80.0, 43.0)
-		])
-		draw_polyline(_closed(highlight), Color("#f2d58a"), 3.0, true)
-
+		draw_polyline(_closed(_diamond(center + Vector2(0.0, 12.0), 68.0, 36.0)), Color("#f2d58a"), 3.0, true)
 
 func _draw_facilities() -> void:
+	var tints: Dictionary = {
+		"workshop": Color("#e4d5bb"),
+		"forge": Color("#c9b8a8"),
+		"watermill": Color("#d4e1d5")
+	}
 	for facility_id: String in FACILITY_POSITIONS:
 		if not _built_facilities.has(facility_id):
 			continue
 		var center: Vector2 = FACILITY_POSITIONS[facility_id]
-		var base := _diamond(center + Vector2(0.0, 12.0), 57.0, 28.0)
-		draw_colored_polygon(base, Color("#857052"))
-		draw_polyline(_closed(base), INK, 2.0, true)
-		var wall_color: Color = Color("#b49a74")
-		var roof_color: Color = Color("#73503b")
-		match facility_id:
-			"forge":
-				wall_color = Color("#8d7660")
-				roof_color = Color("#51463d")
-			"watermill":
-				wall_color = Color("#b5a17a")
-				roof_color = Color("#6a5542")
-		var front := PackedVector2Array([
-			center + Vector2(-38.0, -20.0), center + Vector2(0.0, -1.0),
-			center + Vector2(0.0, 43.0), center + Vector2(-38.0, 24.0)
-		])
-		var side := PackedVector2Array([
-			center + Vector2(0.0, -1.0), center + Vector2(42.0, -22.0),
-			center + Vector2(42.0, 23.0), center + Vector2(0.0, 43.0)
-		])
-		draw_colored_polygon(front, wall_color.darkened(0.13))
-		draw_colored_polygon(side, wall_color)
-		draw_polyline(_closed(front), INK, 2.0, true)
-		draw_polyline(_closed(side), INK, 2.0, true)
-		var roof := PackedVector2Array([
-			center + Vector2(-48.0, -22.0), center + Vector2(-3.0, -66.0),
-			center + Vector2(51.0, -25.0), center + Vector2(4.0, -1.0)
-		])
-		draw_colored_polygon(roof, roof_color)
-		draw_polyline(_closed(roof), INK, 2.5, true)
-		draw_rect(Rect2(center + Vector2(-13.0, 12.0), Vector2(17.0, 30.0)), Color("#50392e"))
+		_draw_building_sprite(center, tints[facility_id])
 		if facility_id == "forge":
-			var smoke := center + Vector2(28.0, -71.0 - fposmod(_elapsed * 8.0, 13.0))
+			var smoke := center + Vector2(24.0, -83.0 - fposmod(_elapsed * 8.0, 13.0))
 			draw_circle(smoke, 5.0, Color(0.68, 0.66, 0.59, 0.32))
 			draw_circle(smoke + Vector2(6.0, -7.0), 4.0, Color(0.68, 0.66, 0.59, 0.22))
 		if _selected_type == "building" and _selected_id == facility_id:
-			draw_polyline(_closed(_diamond(center + Vector2(0.0, 5.0), 62.0, 35.0)), Color("#f2d58a"), 3.0, true)
+			draw_polyline(_closed(_diamond(center + Vector2(0.0, 12.0), 68.0, 36.0)), Color("#f2d58a"), 3.0, true)
+
+func _draw_building_sprite(center: Vector2, tint: Color) -> void:
+	# The building and roof use the same authored tile footprint. A slight
+	# vertical roof lift keeps the gable clear of the window/door facade.
+	_draw_iso_sprite(TEX_BUILDING, center, TILE_SCALE, tint)
+	_draw_iso_sprite(TEX_ROOF, center + Vector2(0.0, -27.0), TILE_SCALE, Color.WHITE)
+
+func _draw_iso_sprite(texture: Texture2D, center: Vector2, scale_factor: float, tint: Color) -> void:
+	var size: Vector2 = Vector2(texture.get_size()) * scale_factor
+	draw_texture_rect(texture, Rect2(center - size * 0.5, size), false, tint)
+
+func _draw_ground_sprite(texture: Texture2D, ground_position: Vector2, scale_factor: float, tint: Color) -> void:
+	var size: Vector2 = Vector2(texture.get_size()) * scale_factor
+	var ground_anchor: float = size.y * 0.91
+	draw_texture_rect(texture, Rect2(
+		ground_position - Vector2(size.x * 0.5, ground_anchor),
+		size
+	), false, tint)
 
 func _draw_daylight() -> void:
 	var hour: float = float(posmod(_simulation_minute, 1440)) / 60.0
@@ -269,14 +207,10 @@ func _draw_daylight() -> void:
 		draw_rect(Rect2(Vector2(-900.0, -600.0), Vector2(1800.0, 1200.0)), Color(0.10, 0.13, 0.22, darkness))
 
 func _draw_props() -> void:
-	# Wood stack and a small handcart make the farmstead feel occupied.
-	draw_rect(Rect2(Vector2(-210.0, 5.0), Vector2(38.0, 13.0)), Color("#78533b"))
-	draw_rect(Rect2(Vector2(-205.0, -5.0), Vector2(34.0, 12.0)), Color("#a77a4e"))
-	draw_circle(Vector2(-190.0, 22.0), 7.0, INK)
-	draw_circle(Vector2(-190.0, 22.0), 3.5, Color("#b7a17c"))
-	draw_line(Vector2(-190.0, 22.0), Vector2(-160.0, 5.0), INK, 3.0)
-	draw_ellipse(Vector2(15.0, 170.0), Vector2(33.0, 15.0), Color("#5b6b46"))
-	draw_colored_polygon(_diamond(Vector2(15.0, 155.0), 23.0, 13.0), Color("#b49a6c"))
+	_draw_ground_sprite(TEX_WELL, Vector2(15.0, 170.0), TILE_SCALE, Color.WHITE)
+	_draw_iso_sprite(TEX_BRIDGE, Vector2(315.0, -45.0), TILE_SCALE, Color.WHITE)
+	_draw_ground_sprite(TEX_FENCE, Vector2(-330.0, 230.0), TILE_SCALE * 0.78, Color.WHITE)
+	_draw_ground_sprite(TEX_FENCE, Vector2(-270.0, 260.0), TILE_SCALE * 0.78, Color.WHITE)
 
 func _draw_npcs() -> void:
 	var ids: Array[String] = ["mara", "edric", "elin", "tomas", "aldwin"]
