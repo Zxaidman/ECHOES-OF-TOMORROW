@@ -233,6 +233,11 @@ func _refresh() -> void:
 		return
 	_refresh_hud()
 	_world.set_simulation_minute(_simulation.clock.current_minute)
+	var built_facilities: Array[String] = []
+	for facility: Dictionary in _simulation.facilities.get_entries(_simulation.knowledge, _simulation.resources):
+		if bool(facility.built):
+			built_facilities.append(str(facility.id))
+	_world.set_built_facilities(built_facilities)
 	_world.set_selected_entity(_selected_type, _selected_id)
 	_refresh_side_panel()
 

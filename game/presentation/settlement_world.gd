@@ -26,6 +26,11 @@ const NPC_POSITIONS: Dictionary = {
 	"tomas": Vector2(175.0, -70.0),
 	"aldwin": Vector2(45.0, -145.0)
 }
+const FACILITY_POSITIONS: Dictionary = {
+	"workshop": Vector2(145.0, -150.0),
+	"forge": Vector2(225.0, 145.0),
+	"watermill": Vector2(365.0, -45.0)
+}
 
 var _camera_offset: Vector2 = Vector2.ZERO
 var _zoom: float = 1.0
@@ -34,6 +39,7 @@ var _drag_moved: bool = false
 var _last_mouse: Vector2 = Vector2.ZERO
 var _elapsed: float = 0.0
 var _simulation_minute: int = 480
+var _built_facilities: Array[String] = ["farmstead"]
 var _selected_type: String = "building"
 var _selected_id: String = "farmstead"
 
@@ -48,6 +54,10 @@ func _process(delta: float) -> void:
 
 func set_simulation_minute(value: int) -> void:
 	_simulation_minute = maxi(0, value)
+
+func set_built_facilities(value: Array[String]) -> void:
+	_built_facilities = value.duplicate()
+	queue_redraw()
 
 func set_selected_entity(entity_type: String, entity_id: String) -> void:
 	_selected_type = entity_type
@@ -68,8 +78,10 @@ func _draw() -> void:
 	_draw_farm_plots()
 	_draw_trees()
 	_draw_farmstead()
+	_draw_facilities()
 	_draw_props()
 	_draw_npcs()
+	_draw_daylight()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_terrain() -> void:
@@ -198,6 +210,62 @@ func _draw_farmstead() -> void:
 		])
 		draw_polyline(_closed(highlight), Color("#f2d58a"), 3.0, true)
 
+
+func _draw_facilities() -> void:
+	for facility_id: String in FACILITY_POSITIONS:
+		if not _built_facilities.has(facility_id):
+			continue
+		var center: Vector2 = FACILITY_POSITIONS[facility_id]
+		var base := _diamond(center + Vector2(0.0, 12.0), 57.0, 28.0)
+		draw_colored_polygon(base, Color("#857052"))
+		draw_polyline(_closed(base), INK, 2.0, true)
+		var wall_color: Color = Color("#b49a74")
+		var roof_color: Color = Color("#73503b")
+		match facility_id:
+			"forge":
+				wall_color = Color("#8d7660")
+				roof_color = Color("#51463d")
+			"watermill":
+				wall_color = Color("#b5a17a")
+				roof_color = Color("#6a5542")
+		var front := PackedVector2Array([
+			center + Vector2(-38.0, -20.0), center + Vector2(0.0, -1.0),
+			center + Vector2(0.0, 43.0), center + Vector2(-38.0, 24.0)
+		])
+		var side := PackedVector2Array([
+			center + Vector2(0.0, -1.0), center + Vector2(42.0, -22.0),
+			center + Vector2(42.0, 23.0), center + Vector2(0.0, 43.0)
+		])
+		draw_colored_polygon(front, wall_color.darkened(0.13))
+		draw_colored_polygon(side, wall_color)
+		draw_polyline(_closed(front), INK, 2.0, true)
+		draw_polyline(_closed(side), INK, 2.0, true)
+		var roof := PackedVector2Array([
+			center + Vector2(-48.0, -22.0), center + Vector2(-3.0, -66.0),
+			center + Vector2(51.0, -25.0), center + Vector2(4.0, -1.0)
+		])
+		draw_colored_polygon(roof, roof_color)
+		draw_polyline(_closed(roof), INK, 2.5, true)
+		draw_rect(Rect2(center + Vector2(-13.0, 12.0), Vector2(17.0, 30.0)), Color("#50392e"))
+		if facility_id == "forge":
+			var smoke := center + Vector2(28.0, -71.0 - fposmod(_elapsed * 8.0, 13.0))
+			draw_circle(smoke, 5.0, Color(0.68, 0.66, 0.59, 0.32))
+			draw_circle(smoke + Vector2(6.0, -7.0), 4.0, Color(0.68, 0.66, 0.59, 0.22))
+		if _selected_type == "building" and _selected_id == facility_id:
+			draw_polyline(_closed(_diamond(center + Vector2(0.0, 5.0), 62.0, 35.0)), Color("#f2d58a"), 3.0, true)
+
+func _draw_daylight() -> void:
+	var hour: float = float(posmod(_simulation_minute, 1440)) / 60.0
+	var darkness: float = 0.0
+	if hour < 6.0 or hour >= 20.0:
+		darkness = 0.27
+	elif hour < 8.0:
+		darkness = lerpf(0.27, 0.0, (hour - 6.0) / 2.0)
+	elif hour >= 18.0:
+		darkness = lerpf(0.0, 0.27, (hour - 18.0) / 2.0)
+	if darkness > 0.0:
+		draw_rect(Rect2(Vector2(-900.0, -600.0), Vector2(1800.0, 1200.0)), Color(0.10, 0.13, 0.22, darkness))
+
 func _draw_props() -> void:
 	# Wood stack and a small handcart make the farmstead feel occupied.
 	draw_rect(Rect2(Vector2(-210.0, 5.0), Vector2(38.0, 13.0)), Color("#78533b"))
@@ -296,6 +364,10 @@ func _select_at(screen_position: Vector2) -> void:
 	if world_position.distance_to(Vector2(-82.0, -62.0)) < 105.0:
 		entity_selected.emit("building", "farmstead")
 		return
+	for facility_id: String in FACILITY_POSITIONS:
+		if _built_facilities.has(facility_id) and world_position.distance_to(FACILITY_POSITIONS[facility_id]) < 75.0:
+			entity_selected.emit("building", facility_id)
+			return
 
 func _diamond(center: Vector2, half_width: float, half_height: float) -> PackedVector2Array:
 	return PackedVector2Array([
