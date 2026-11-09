@@ -160,3 +160,10 @@ The first manual playtest rejected the current presentation as a game experience
 ### Release gate
 
 The game must launch into a living settlement and provide a meaningful interactive loop before stable 1.0.0 is reconsidered. A polished dashboard alone does not satisfy this gate.
+
+
+### 1.0.0-rc.2 — outlined sprite integration
+
+- Added selected Kenney Sketch Town / Sketch Town Expansion CC0 sprites for ground, paths, river, crops, buildings, roofs, trees and props.
+- Replaced the first procedural terrain/building/foliage pass with source sprites; retained simulation authority and world interactions.
+- Headless import, tests and Windows export passed. Desktop visual playtest remains required for composition, sprite alignment, selection hit areas and zoom readability.

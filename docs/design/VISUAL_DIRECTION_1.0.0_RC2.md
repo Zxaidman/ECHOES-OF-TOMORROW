@@ -5,25 +5,25 @@
 
 ## Chosen direction
 
-**Isometric 2.5D, hand-painted medieval settlement, restrained dark outlines.**
+**Isometric 2.5D, stylized outlined medieval settlement with shaded low-poly forms.**
 
-The settlement is the game. The first screen must show a place that appears inhabited, not a data dashboard. The art should feel warm, tactile and historically grounded without pursuing photorealism.
+The settlement is the game. The first screen must show a place that appears inhabited, not a data dashboard. The art should feel warm, tactile and historically grounded without pursuing photorealism. Use a consistent illustrated language: shaded forms, readable silhouettes, warm materials and restrained dark contours.
 
 ## Camera and world
 
 - Isometric/diamond-grid composition with a fixed 3/4 camera.
 - Use Godot 2D rendering with layered sprites, not a full 3D simulation.
-- Use `TileMapLayer` for terrain and grid-aligned ground features.
-- Use Y-sorting or explicit depth layers for buildings, characters and props.
+- Draw repeated isometric ground tiles in a deterministic back-to-front pass; move to `TileMapLayer` only when map editing or collision requires it.
+- Use explicit depth ordering for buildings, characters and props; avoid one unique node per repeated ground tile.
 - Keep simulation state authoritative and independent of render frame timing.
 - Camera pan/zoom must be bounded, smooth and usable with mouse and keyboard.
 - Support selection, hover feedback and contextual inspection.
 
 ## Art treatment
 
-- Hand-painted textures with readable silhouettes.
+- Use Kenney Sketch Town and Sketch Town Expansion as the initial production asset baseline: stylized shaded isometric blocks with dark authored contours.
 - Muted earth, timber, stone, foliage and warm cloth palette.
-- Fine, restrained dark contour outlines around major forms.
+- Preserve the source sprites' contour weight; add selection outlines separately rather than applying thick outlines to every object.
 - Avoid thick black cartoon strokes and noisy outlines on every small detail.
 - Keep selected/hovered outlines visually distinct from permanent art contours.
 - Use layered foliage, smoke, water, flags, fire and ambient details to create motion.
@@ -71,7 +71,15 @@ Do not add explanatory helper copy to compensate for weak hierarchy. Use clear l
 
 ## Open-source asset policy
 
-Evaluate assets from Kenney, OpenGameArt and other open libraries as candidates, not as assumed production-ready content. Record the exact source URL, creator, licence, attribution requirements, modification status and files used. Prefer CC0 or permissive licences. Do not mix incompatible licences or redistribute assets without checking their terms.
+The first integrated art set is Kenney Sketch Town and Sketch Town Expansion. Both original pack pages declare CC0 1.0. The selected sprites are stored under `assets/kenney/sketch-town/`; the folder README records source URLs, creator, licence and pinned source-mirror commit. Prefer CC0 or permissive licences for future additions. Do not mix incompatible licences or redistribute assets without checking their terms.
+
+## Current integration status
+
+- Integrated 12 source sprites: terrain, path, river, crop furrows, building facade, gable roof, trees, bridge, well and fence.
+- Terrain tiles are drawn back-to-front in a bounded deterministic pass; world simulation remains authoritative.
+- Selection contours and day/night tint remain presentation overlays.
+- NPC figures are still procedural placeholders; a matching character sprite/animation set is a later art task.
+- CI has verified project import, script parsing, headless tests and Windows export. The scene still requires a desktop visual playtest at multiple zoom levels before the art pass is considered accepted.
 
 ## Rendering performance
 
