@@ -28,6 +28,7 @@ var _selected_id: String = "farmstead"
 var _active_view: String = "village"
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_simulation = SettlementSimulation.new()
 	_campaign_progress = FirstSparkCampaign.new()
 	_simulation.schedule_resource_delta("daily-farm-output", 600, 20, "food", 14, 1440)
