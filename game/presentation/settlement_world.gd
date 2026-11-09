@@ -36,6 +36,8 @@ var _camera_offset: Vector2 = Vector2.ZERO
 var _zoom: float = 1.0
 var _dragging: bool = false
 var _drag_moved: bool = false
+var _pending_click: bool = false
+var _pending_click_position: Vector2 = Vector2.ZERO
 var _last_mouse: Vector2 = Vector2.ZERO
 var _elapsed: float = 0.0
 var _simulation_minute: int = 480
@@ -309,18 +311,18 @@ func _input(event: InputEvent) -> void:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			if mouse_event.pressed:
+				var hovered: Control = get_viewport().gui_get_hovered_control()
+				if hovered != null:
+					return
 				_dragging = true
 				_drag_moved = false
+				_pending_click = false
 				_last_mouse = mouse_event.position
 			else:
 				if _dragging and not _drag_moved:
-					_select_at(mouse_event.position)
+					_pending_click = true
+					_pending_click_position = mouse_event.position
 				_dragging = false
-				return
-		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom_at(mouse_event.position, 1.12)
-		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom_at(mouse_event.position, 1.0 / 1.12)
 	elif event is InputEventMouseMotion and _dragging:
 		var motion := event as InputEventMouseMotion
 		if motion.position.distance_to(_last_mouse) > 4.0:
@@ -328,6 +330,17 @@ func _input(event: InputEvent) -> void:
 		_camera_offset += motion.position - _last_mouse
 		_last_mouse = motion.position
 		queue_redraw()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and not mouse_event.pressed and _pending_click:
+			_select_at(_pending_click_position)
+			_pending_click = false
+		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_at(mouse_event.position, 1.12)
+		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_at(mouse_event.position, 1.0 / 1.12)
 	elif event is InputEventKey and event.pressed and not event.echo:
 		var key_event := event as InputEventKey
 		var direction := Vector2.ZERO
