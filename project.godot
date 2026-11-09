@@ -1,5 +1,5 @@
-; Echoes of Tomorrow — settlement simulation milestone
-; Project version: 1.0.0
+; Echoes of Tomorrow — First Spark visual overhaul
+; Project version: 1.0.0-rc.2
 config_version=5
 
 [application]
@@ -21,4 +21,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.055, 0.067, 0.082, 1)
 
 [release]
-channel="rc.1"
+channel="rc.2"

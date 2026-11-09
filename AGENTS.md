@@ -2,56 +2,54 @@
 
 ## Project identity
 - Project: Echoes of Tomorrow
-- Current project version: 1.0.0-rc.1
-- Current phase: 1.0.0 release candidate validation
+- Current project version: 1.0.0-rc.2
+- Current phase: First Spark gameplay and visual overhaul
 - Engine: Godot 4.7.2-stable (standard build)
 - Language: typed GDScript
 - Vertical slice: The First Spark
 
-## Mandatory product and engineering principle
-> If a screen needs them to make sense, fix the layout. Every decision should elevate UX, DX and AX at once, without breaking anything.
+## Product principle
+> If a screen needs helper text to make sense, fix the layout. Elevate UX, DX and AX together without breaking existing behavior.
 
-- UX: clear hierarchy, understandable state, accessible controls and useful feedback.
-- DX: modular code, explicit contracts, documentation, tests and maintainability.
-- AX: machine-readable schemas, stable interfaces, explicit constraints and deterministic behavior.
-- Stability: protect existing behavior, test changes and document migrations.
-
-## Non-negotiable architecture rules
+## Mandatory architecture
 1. Deterministic simulation owns authoritative game state.
-2. LLM output is untrusted and must be validated before any game command.
+2. LLM output is untrusted and validated before any game command.
 3. LLMs never write directly to saves or authoritative state.
-4. Core gameplay works offline and without an LLM provider.
-5. Important NPC memory is structured, bounded, versioned and persisted; retrieval is deterministic and NPC-scoped.
+4. Core gameplay works offline.
+5. Important NPC memory is structured, bounded, versioned and persisted.
 6. Randomness uses explicit seeded streams.
 7. UI scenes do not own domain rules.
 8. Authored content is data-driven and validated at load boundaries.
 9. Avoid premature microservices, multiplayer and per-NPC LLM calls.
-10. No dependency/plugin without a documented reason and fallback.
+10. No dependency/plugin without a documented reason, licence and fallback.
 
-## Workflow
-Before changing code, inspect relevant docs and contracts. After changes, run headless import/parse and tests, add tests for behavior changes, update docs/changelog, and report exactly what was verified. Manual desktop playtesting is a 1.0.0 release gate; do not block intermediate milestones on it.
+## Branch and release policy
+- Exactly two long-lived branches: `main` and `develop`.
+- Work directly on `develop`; do not create feature, fix, milestone or release branches.
+- `main` is the stable release branch. Promote from `develop` to `main` only after explicit release approval.
+- The existing CI and Development Release workflows are the only pipelines. Update them in place; do not add parallel workflows.
+- Keep only the newest development prerelease and its Windows ZIP/checksum. Older development prereleases and tags are deleted after a new build succeeds.
+- Never create GitHub Actions build artifacts.
+- Never publish a stable release without explicit approval.
 
-## Compatibility and versioning
-- Follow MAJOR.MINOR.PATCH.
-- Breaking persisted schemas or public contracts require migrations and version increments.
-- Never overwrite user work or remove features without authorization.
-- Never commit secrets.
+## Visual direction
+- Isometric 2.5D settlement presentation.
+- Hand-painted, warm medieval art direction with restrained dark contour outlines.
+- World view is the primary screen; dashboards are secondary/contextual.
+- Buildings and NPCs must be selectable, legible and depth-sorted.
+- Prefer authored sprite outlines; use the shared outline shader where appropriate and only when its padded texture bounds prevent clipping.
+- Use restrained lighting, ambient animation and purposeful feedback. Avoid expensive full-screen effects without measured benefit.
+- Do not ship placeholder rectangles as final game art.
 
-## Architecture baseline
-- Godot 4.7.2-stable, typed GDScript.
-- Authored content: versioned JSON.
-- Settings: ConfigFile. Campaign saves: versioned JSON snapshots with temp write and backup.
-- Simulation: integer-minute clock and deterministic scheduled events; never couple to render frames.
-- NPC AI: provider-neutral gateway and schema-validated allowlisted intents.
-- Platform order: Windows, Android, then Web after explicit gates.
-- Compatibility renderer to preserve Web feasibility.
-
-## CI/CD
-- CI is headless validation only; no Actions artifacts or caches.
-- Pin engine and third-party actions.
-- develop is integration branch; it publishes Windows GitHub prereleases.
-- main is stable baseline. Stable releases require explicit approval.
+## Engineering workflow
+- Inspect relevant docs/contracts before changing code.
+- Keep simulation independent from render frames and presentation state.
+- Add tests for behavior changes; preserve save compatibility and migrations.
+- Run headless import/parse and tests; run Windows export before publishing.
+- Update docs/changelog and report exactly what was verified.
+- Use semantic versioning. While 1.0.0 is not stable, continue as 1.0.0 release candidates rather than claiming 1.1.0.
 - Never claim a build passed unless the workflow run succeeded.
 
 ## Current implementation boundary
-Implemented: settlement resources, deterministic events, seeded RNG streams, five named NPCs, aggregate background population, needs, schedules, directional relationships, bounded persistent NPC memories, deterministic memory retrieval and decay, validated dialogue DTOs and offline fallback, data-driven knowledge, nine invention definitions, prototype validation, production commissioning, authored historical event choices, causal follow-ups, NPC/resource/relationship consequences, original/altered timeline persistence, derived First Spark objectives, persisted invention production counts, facility construction and facility-gated production. Not implemented: construction throughput, work assignment, maintenance, trade, diplomacy, multi-settlement play, live provider integration or secure inference backend, Android/Web exports. Manual desktop playtesting is deferred until the 1.0.0 release candidate.
+Implemented: deterministic resources/events/RNG, five named NPCs, aggregate background population, schedules and relationships, bounded NPC memories, validated dialogue DTOs and offline fallback, knowledge and invention lifecycle, historical events/timeline, First Spark objectives, facilities and facility-gated production, campaign save/load and verified backup recovery.
+Not implemented: a living settlement scene, NPC world movement/animation, construction placement, work assignment, maintenance, trade, diplomacy, multi-settlement play, live provider integration, Android/Web exports.

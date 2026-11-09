@@ -127,3 +127,36 @@ Milestones are gates, not calendar promises. A milestone is complete only when i
 1. Complete the manual acceptance checklist in PLAYTEST_1.0.0.md.
 2. Fix critical/high-severity issues and rerun CI/export.
 3. Publish stable 1.0.0 only after acceptance is complete.
+
+
+## Post-playtest reset: 1.0.0-rc.2
+
+The first manual playtest rejected the current presentation as a game experience. The simulation systems may work, but the current tab-and-list interface does not deliver the intended settlement-building fantasy. Stable 1.0.0 is therefore not approved.
+
+### Priority: make the world the game
+
+- [ ] Replace the dashboard-first opening with an isometric 2.5D settlement scene.
+- [ ] Establish a hand-painted art direction with restrained dark contours.
+- [ ] Add terrain, paths, farmstead, vegetation and readable environmental props.
+- [ ] Add visible NPCs with idle, walk and work states.
+- [ ] Add camera pan/zoom, hover and selection.
+- [ ] Move building/NPC details into contextual panels.
+- [ ] Keep resources, time, speed and alerts in a compact HUD.
+- [ ] Add visible feedback for at least one meaningful action.
+- [ ] Verify sprite outline shader bounds, filtering and scale.
+- [ ] Preserve simulation, save/load, backup recovery and offline dialogue behavior.
+- [ ] Run headless tests and Windows export after each integrated slice.
+
+### Visual milestone order
+
+1. World composition and art direction.
+2. Terrain, tile grid, depth sorting and camera.
+3. Building/prop sprite pipeline and outline treatment.
+4. NPC world presence and basic animation.
+5. Selection, contextual panels and compact HUD.
+6. Action feedback, ambient motion, lighting and sound.
+7. Performance and accessibility pass.
+
+### Release gate
+
+The game must launch into a living settlement and provide a meaningful interactive loop before stable 1.0.0 is reconsidered. A polished dashboard alone does not satisfy this gate.

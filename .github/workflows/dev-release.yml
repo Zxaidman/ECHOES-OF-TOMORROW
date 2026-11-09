@@ -10,6 +10,8 @@ on:
       - "content/**"
       - "tests/**"
       - "export_presets.cfg"
+      - "docs/**"
+      - "AGENTS.md"
       - ".github/workflows/dev-release.yml"
   workflow_dispatch:
 
@@ -24,7 +26,7 @@ jobs:
   build-and-release:
     name: Build Windows development release
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -66,7 +68,7 @@ jobs:
           zip -9 EchoesOfTomorrow-windows-x86_64.zip EchoesOfTomorrow.exe
           sha256sum EchoesOfTomorrow-windows-x86_64.zip > EchoesOfTomorrow-windows-x86_64.zip.sha256
 
-      - name: Publish GitHub prerelease (no Actions artifacts)
+      - name: Publish GitHub prerelease (retain latest development build only)
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -78,9 +80,34 @@ jobs:
           RELEASE_VERSION="$VERSION"
           if [ -n "$CHANNEL" ]; then RELEASE_VERSION="${VERSION}-${CHANNEL}"; fi
           TAG="v${RELEASE_VERSION}-dev.${GITHUB_RUN_NUMBER}"
+
           gh release create "$TAG" \
             build/EchoesOfTomorrow-windows-x86_64.zip \
             build/EchoesOfTomorrow-windows-x86_64.zip.sha256 \
+            --target "$GITHUB_SHA" \
             --prerelease \
             --title "Echoes of Tomorrow ${RELEASE_VERSION} Development Build ${GITHUB_RUN_NUMBER}" \
             --notes "Automated development build from commit ${GITHUB_SHA}. This is a prerelease, not a stable release. Download the Windows x86_64 ZIP and verify it with the accompanying SHA-256 file."
+
+          # Keep the newly published build and remove only older development prereleases.
+          gh release list --limit 1000 --json tagName,isPrerelease \
+            --jq '.[] | select(.isPrerelease and (.tagName | test("-dev\\."))) | .tagName' |
+          while IFS= read -r OLD_TAG; do
+            if [ "$OLD_TAG" != "$TAG" ]; then
+              gh release delete "$OLD_TAG" --yes --cleanup-tag
+            fi
+          done
+
+      - name: Enforce the two-branch repository policy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/branches?per_page=100" --jq '.[].name' |
+          while IFS= read -r BRANCH; do
+            case "$BRANCH" in
+              main|develop) continue ;;
+            esac
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}"
+          done
