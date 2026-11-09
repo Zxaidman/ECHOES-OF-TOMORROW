@@ -30,6 +30,7 @@ const NPC_POSITIONS: Dictionary = {
 var _camera_offset: Vector2 = Vector2.ZERO
 var _zoom: float = 1.0
 var _dragging: bool = false
+var _drag_moved: bool = false
 var _last_mouse: Vector2 = Vector2.ZERO
 var _elapsed: float = 0.0
 var _simulation_minute: int = 480
@@ -239,9 +240,14 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			_dragging = mouse_event.pressed
-			_last_mouse = mouse_event.position
-			if not mouse_event.pressed:
+			if mouse_event.pressed:
+				_dragging = true
+				_drag_moved = false
+				_last_mouse = mouse_event.position
+			else:
+				if _dragging and not _drag_moved:
+					_select_at(mouse_event.position)
+				_dragging = false
 				return
 		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_zoom_at(mouse_event.position, 1.12)
@@ -249,6 +255,8 @@ func _input(event: InputEvent) -> void:
 			_zoom_at(mouse_event.position, 1.0 / 1.12)
 	elif event is InputEventMouseMotion and _dragging:
 		var motion := event as InputEventMouseMotion
+		if motion.position.distance_to(_last_mouse) > 4.0:
+			_drag_moved = true
 		_camera_offset += motion.position - _last_mouse
 		_last_mouse = motion.position
 		queue_redraw()
@@ -271,11 +279,6 @@ func _zoom_at(screen_position: Vector2, factor: float) -> void:
 	_camera_offset = screen_position - world_position * _zoom
 	queue_redraw()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mouse_event := event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT and not mouse_event.pressed and not _dragging:
-			_select_at(mouse_event.position)
 
 func _select_at(screen_position: Vector2) -> void:
 	var world_position: Vector2 = (screen_position - _camera_offset) / _zoom

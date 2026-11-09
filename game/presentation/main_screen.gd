@@ -149,10 +149,14 @@ func _build_side_panel() -> void:
 
 	var rule := HSeparator.new()
 	_side_panel.add_child(rule)
+	var content_scroll := ScrollContainer.new()
+	content_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_side_panel.add_child(content_scroll)
 	_panel_content = VBoxContainer.new()
-	_panel_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_panel_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_panel_content.add_theme_constant_override("separation", 7)
-	_side_panel.add_child(_panel_content)
+	content_scroll.add_child(_panel_content)
 
 func _build_bottom_navigation() -> void:
 	var panel := PanelContainer.new()
